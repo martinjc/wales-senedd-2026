@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="//d3js.org/d3.v6.min.js"></script>
+    <script src="//unpkg.com/d3-hexjson"></script>
+    <title>Wales Senedd Constituency and Electoral Region Hexmap</title>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            padding: 0px;
+
+            height: 100%;
+            width: 100%;
+
+            background-color: #ddd;
+
+            position: relative;
+
+            font-family: "Open Sans", sans-serif;
+            color: #555;
+        }
+        #sc_map, #scm_map {
+            display: block;
+            width: 45%;
+            float: left;
+        }
+        #info {
+            clear: both;
+            visibility: hidden;
+            padding: 30px;
+        }
+        #info.active {
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div id='sc_map'></div>
+    <div id="scm_map"></div>
+    <div id="info"><h1>This is <span id="sc_name"></span></h1></div>
+
+    <script>
+
+        let party_details = {
+            'Labour': { name: 'Labour', colour: '#DC241f' },
+            'Conservative': { name: 'Conservative', colour: '#0087DC' },
+            'Green': { name: 'Green Party', colour: '#6AB023' },
+            'Liberal Democrats': { name: 'Liberal Democrats', colour: '#FDBB30' },
+            'Plaid Cymru': { name: 'Plaid Cymru', colour: '#008142' },
+            'Independent': { name: 'Independent', colour: '#aaa' },
+            'Reform UK': { name: 'Reform UK', colour: '#12B6CF' }
+        }
+
+        let width = d3.select('#sc_map').node().clientWidth;
+
+        let height = 600;
+
+        let margin = {
+            top: 30,
+            bottom: 30,
+            left: 30,
+            right: 30
+        }
+
+        let sc_svg = d3.select('#sc_map').append('svg').attr("width", width).attr('height', height);
+        let scer_svg = d3.select('#scm_map').append('svg').attr("width", width).attr('height', height);
+
+        let projection = d3.geoMercator();
+        let path = d3.geoPath().projection(projection);
+
+        let active = d3.select(null);
+
+        function reset(event, d) {
+            active.attr('opacity', '1.0');
+            active = d3.select(null);
+
+            d3.select('#info')
+                .classed('active', false);
+        }
+
+        function clicked(event, d) {
+            console.log(d);
+            if(active.node() === this) {
+                reset(event, d);
+            } else {
+                active.attr('opacity', '1.0')
+                active = d3.select(this);
+                active.attr('opacity', '0.2')
+                d3.select("#info")
+                        .classed("active", true);
+                if (d.English_Na) {
+                    d3.select('#sc_name').text(d.English_Na);
+                }
+            }
+        }
+
+        Promise.all([
+            d3.json('data/senedd_2026.hexjson'),
+            d3.json('data/senedd_2026_multiple.hexjson'),
+            d3.csv('data/senedd_multiple_hexes.csv')
+        ]).then(([sc_hexes, sc_hexes_multiple, sc_data]) => {
+
+            function getColour(hex, index){
+                let sc_info = sc_data.find(d => d.id === `${hex.No_Rhif}_${index}`);
+                if(sc_info) {
+                    let party = party_details[sc_info.Party];
+                    if(party) {
+                        return party.colour;
+                    } else {
+                        return 'purple';
+                    }
+                } else {
+                    return 'purple';
+                }
+            }
+
+
+            sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width-margin.left-margin.right, height-margin.top-margin.bottom);
+            let sc_hexmap = sc_svg.selectAll('g')
+                .data(sc_hexes_rendered)
+                .join((enter) => {
+                    let g = enter.append('g')
+                        .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`);
+
+                    g.append('polygon')
+                        .attr('points', (hex) => hex.points)
+                        .attr('stroke', '#fff')
+                        .attr('fill', '#ccc')
+                        .attr('stroke-width', 10)
+                        .attr('id', (hex) => hex.key)
+                        .attr('data-name', (hex) => hex.name)
+                        .on('click', clicked);
+
+                    for(let i=1; i<=6; i++ ){
+                        g.append('polygon')
+                            .attr('points', (hex) => `0,0 ${hex.vertices[i-1].x},${hex.vertices[i-1].y} ${hex.vertices[i < 6 ? i : 0].x},${hex.vertices[i <  6 ? i : 0].y}`)
+                            .attr('fill', (hex) => getColour(hex, i))
+                            .attr('stroke', '#eee')
+                            .attr('stroke-width', 0.5)
+                            .on('click', clicked);
+                    }
+                });
+            sc_hexes_multiple_rendered = d3.renderHexJSON(sc_hexes_multiple, width-margin.left-margin.right, height-margin.top-margin.bottom);
+            let scer_hexmap = scer_svg.selectAll('g')
+                .data(sc_hexes_multiple_rendered)
+                .join((enter) => {
+                    enter.append('g')
+                        .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`)
+                        .append('polygon')
+                        .attr('points', (hex) => hex.points)
+                        .attr('stroke', '#eee')
+                        .attr('fill', (hex) => getColour(hex, hex.Segment))
+                        .attr('stroke-width', 1)
+                        .attr('id', (hex) => hex.key)
+                        .attr('data-name', (hex) => hex.name)
+                        .on('click', clicked);
+                });
+
+            sc_boundaries = d3.getBoundarySegmentsForHexJSON(sc_hexes_multiple, width-margin.left-margin.right, height-margin.top-margin.bottom, "English_Na");
+            let boundaries = scer_svg.selectAll('line')
+                .data(sc_boundaries)
+                .join((enter) => {
+                    enter.append('line')
+                        .attr('x1', (boundary) => boundary.x1+margin.left)
+                        .attr('y1', (boundary) => boundary.y1+margin.top)
+                        .attr('x2', (boundary) => boundary.x2+margin.left)
+                        .attr('y2', (boundary) => boundary.y2+margin.top)
+                        .attr('fill', 'none')
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 5)
+                });
+            });
+
+    </script>
+
+</body>
+</html>
