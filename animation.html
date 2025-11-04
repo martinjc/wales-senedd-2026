@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="//d3js.org/d3.v6.min.js"></script>
+    <script src="//unpkg.com/d3-hexjson"></script>
+    <script src="//unpkg.com/topojson@3"></script>
+
+    <title>Wales Senedd Constituency and Electoral Region Hexmap</title>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            padding: 0px;
+
+            height: 100%;
+            width: 100%;
+
+            background-color: #ddd;
+
+            position: relative;
+
+            font-family: "Open Sans", sans-serif;
+            color: #555;
+        }
+        #map {
+            display: block;
+            width: 60%;
+            float: left;
+        }
+
+        #controls {
+            display: block;
+            width: 35%;
+            float: left;
+            padding: 20px;
+        }
+
+        #info {
+            clear: both;
+            visibility: hidden;
+            padding: 30px;
+        }
+        #info.active {
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div id='map'></div>
+    <div id="controls">
+        <input type="button" value="Advance" id="advance_btn" />
+    </div>
+    <div id="info"><h1>This is <span id="sc_name"></span></h1></div>
+
+    <script>
+
+        let party_details = {
+            'Labour': { name: 'Labour', colour: '#DC241f' },
+            'Conservative': { name: 'Conservative', colour: '#0087DC' },
+            'Green': { name: 'Green Party', colour: '#6AB023' },
+            'Liberal Democrats': { name: 'Liberal Democrats', colour: '#FDBB30' },
+            'Plaid Cymru': { name: 'Plaid Cymru', colour: '#008142' },
+            'Independent': { name: 'Independent', colour: '#aaa' },
+            'Reform UK': { name: 'Reform UK', colour: '#12B6CF' }
+        }
+
+        let width = d3.select('#map').node().clientWidth;
+
+        let height = 800;
+
+        let margin = {
+            top: 30,
+            bottom: 30,
+            left: 30,
+            right: 30
+        }
+
+        let svg = d3.select('#map').append('svg').attr("width", width).attr('height', height);
+
+        let projection = d3.geoMercator();
+        let path = d3.geoPath().projection(projection);
+
+        let active = d3.select(null);
+
+        function reset(event, d) {
+            active.attr('opacity', '1.0');
+            active = d3.select(null);
+
+            d3.select('#info')
+                .classed('active', false);
+        }
+
+        function clicked(event, d) {
+            console.log(groups);
+            console.log(d);
+            if(active.node() === this) {
+                reset(event, d);
+            } else {
+                active.attr('opacity', '1.0')
+                active = d3.select(this);
+                active.attr('opacity', '0.2')
+                d3.select("#info")
+                        .classed("active", true);
+                if (d.English_Na) {
+                    d3.select('#sc_name').text(d.English_Na);
+                }
+            }
+        }
+
+        function pathTween(d1, precision) {
+            return function() {
+                var path0 = this,
+                    path1 = path0.cloneNode(),
+                    n0 = path0.getTotalLength(),
+                    n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
+
+                // Uniform sampling of distance based on specified precision.
+                var distances = [0], i = 0, dt = precision / Math.max(n0, n1);
+                while ((i += dt) < 1) distances.push(i);
+                distances.push(1);
+
+                // Compute point-interpolators at each distance.
+                var points = distances.map(function(t) {
+                var p0 = path0.getPointAtLength(t * n0),
+                    p1 = path1.getPointAtLength(t * n1);
+                return d3.interpolate([p0.x, p0.y], [p1.x, p1.y]);
+                });
+
+                return function(t) {
+                return t < 1 ? "M" + points.map(function(p) { return p(t); }).join("L") : d1;
+                };
+            };
+        }
+
+
+        let groups = undefined;
+
+
+
+        Promise.all([
+            d3.json('data/senedd_2026.topojson'),
+            d3.json('data/senedd_2026.hexjson'),
+            d3.json('data/senedd_2026_multiple.hexjson'),
+            d3.csv('data/senedd_multiple_hexes.csv')
+        ]).then(([sc_boundaries, sc_hexes, sc_hexes_multiple, sc_data]) => {
+
+            function getColour(hex, index){
+                let sc_info = sc_data.find(d => d.id === `${hex.No_Rhif}_${index}`);
+                if(sc_info) {
+                    let party = party_details[sc_info.Party];
+                    if(party) {
+                        return party.colour;
+                    } else {
+                        return 'purple';
+                    }
+                } else {
+                    return 'purple';
+                }
+            }
+
+            function advance() {
+                
+                sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width-margin.left-margin.right, height-margin.top-margin.bottom);
+
+                svg.selectAll('g')
+                    .data(sc_hexes_rendered)
+                    .join(
+                        (enter) => {},
+                        (update) => {
+                            console.log(update);
+                            update
+                                .select('path')
+                                .transition()
+                                .duration(1000)
+                                .attr('d', function(hex) {
+                                    let existing_boundary = d3.select(this).attr('d');
+                                    let num_L = (existing_boundary.match(/L/g) || []).length;
+                                    let c_x = hex.x;
+                                    let c_y = hex.y;
+                                    let v = hex.vertices;
+                                    let new_v = [{x: c_x + v[0].x, y: c_y + v[0].y}];
+                                    for(let i=0; i<v.length; i++) {
+                                        let next_i = (i+1) % v.length;
+                                        let num_segments = num_L/v.length;
+                                        for(let j=1; j<num_segments; j++) {
+                                            let mid_x = c_x + (v[i].x + ((v[next_i].x-v[i].x) / num_segments) * j);
+                                            let mid_y = c_y + (v[i].y + ((v[next_i].y-v[i].y) / num_segments) * j);
+                                            new_v.push({x: mid_x, y: mid_y});
+                                        }
+                                        // new_v.push({x: c_x + v[next_i].x, y: c_y + v[next_i].y});
+                                    }
+                                    return `M${new_v.map(v => `${v.x},${v.y}`).join(' L')} Z`;
+                                })
+                                .attr('fill', '#888');
+                            // update
+                            //      .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`)
+                            //      .select('polygon')
+                            //         .attr('points', (hex) => hex.points);
+                        },
+                        (exit) => {});
+            }
+
+            d3.select('#advance_btn').on('click', advance);
+
+            let sc = topojson.feature(sc_boundaries, sc_boundaries.objects.senedd_2026);
+
+            projection.fitSize([width, height], sc);
+
+            groups = svg.selectAll('g')
+                .data(sc.features)
+                .join((enter) => {
+                    enter
+                    .append('g')
+                    .append('path')
+                    .attr('d', (d) => {
+                        p = path(d);
+                        // count the number of L commands in the path
+                        let num_L = (p.match(/L/g) || []).length;
+                        console.log(`Path has ${num_L} line segments.`);
+                        return path(d);
+                    })
+                    .attr('fill', '#888' )
+                    .attr('stroke', '#ddd')
+                    .attr('stroke-width', '1px')
+                    .on('click', clicked);
+                });
+
+
+            // sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width-margin.left-margin.right, height-margin.top-margin.bottom);
+            // let sc_hexmap = sc_svg.selectAll('g')
+            //     .data(sc_hexes_rendered)
+            //     .join((enter) => {
+            //         let g = enter.append('g')
+            //             .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`);
+
+            //         g.append('polygon')
+            //             .attr('points', (hex) => hex.points)
+            //             .attr('stroke', '#fff')
+            //             .attr('fill', '#ccc')
+            //             .attr('stroke-width', 10)
+            //             .attr('id', (hex) => hex.key)
+            //             .attr('data-name', (hex) => hex.name)
+            //             .on('click', clicked);
+
+            //         for(let i=1; i<=6; i++ ){
+            //             g.append('polygon')
+            //                 .attr('points', (hex) => `0,0 ${hex.vertices[i-1].x},${hex.vertices[i-1].y} ${hex.vertices[i < 6 ? i : 0].x},${hex.vertices[i <  6 ? i : 0].y}`)
+            //                 .attr('fill', (hex) => getColour(hex, i))
+            //                 .attr('stroke', '#eee')
+            //                 .attr('stroke-width', 0.5)
+            //                 .on('click', clicked);
+            //         }
+            //     });
+            // sc_hexes_multiple_rendered = d3.renderHexJSON(sc_hexes_multiple, width-margin.left-margin.right, height-margin.top-margin.bottom);
+            // let scer_hexmap = scer_svg.selectAll('g')
+            //     .data(sc_hexes_multiple_rendered)
+            //     .join((enter) => {
+            //         enter.append('g')
+            //             .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`)
+            //             .append('polygon')
+            //             .attr('points', (hex) => hex.points)
+            //             .attr('stroke', '#eee')
+            //             .attr('fill', (hex) => getColour(hex, hex.Segment))
+            //             .attr('stroke-width', 1)
+            //             .attr('id', (hex) => hex.key)
+            //             .attr('data-name', (hex) => hex.name)
+            //             .on('click', clicked);
+            //     });
+
+            // sc_boundaries = d3.getBoundarySegmentsForHexJSON(sc_hexes_multiple, width-margin.left-margin.right, height-margin.top-margin.bottom, "English_Na");
+            // let boundaries = scer_svg.selectAll('line')
+            //     .data(sc_boundaries)
+            //     .join((enter) => {
+            //         enter.append('line')
+            //             .attr('x1', (boundary) => boundary.x1+margin.left)
+            //             .attr('y1', (boundary) => boundary.y1+margin.top)
+            //             .attr('x2', (boundary) => boundary.x2+margin.left)
+            //             .attr('y2', (boundary) => boundary.y2+margin.top)
+            //             .attr('fill', 'none')
+            //             .attr('stroke', '#fff')
+            //             .attr('stroke-width', 5)
+            //     });
+            });
+
+    </script>
+
+</body>
+</html>
