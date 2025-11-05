@@ -29,6 +29,8 @@
             display: block;
             width: 60%;
             float: left;
+            margin-left: 30px;
+            margin-top: 30px;
         }
 
         #controls {
@@ -112,25 +114,37 @@
 
         function pathTween(d1, precision) {
             return function() {
-                var path0 = this,
-                    path1 = path0.cloneNode(),
-                    n0 = path0.getTotalLength(),
-                    n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
+                const path0 = this;
+                const path1 = path0.cloneNode();
+                path1.setAttribute("d", d1);
+                const n0 = path0.getTotalLength();
+                const n1 = path1.getTotalLength();
 
                 // Uniform sampling of distance based on specified precision.
-                var distances = [0], i = 0, dt = precision / Math.max(n0, n1);
-                while ((i += dt) < 1) distances.push(i);
+                const distances = [0];
+                const dt = precision / Math.max(n0, n1);
+                let i = 0; while ((i += dt) < 1) distances.push(i);
                 distances.push(1);
 
                 // Compute point-interpolators at each distance.
-                var points = distances.map(function(t) {
-                var p0 = path0.getPointAtLength(t * n0),
-                    p1 = path1.getPointAtLength(t * n1);
-                return d3.interpolate([p0.x, p0.y], [p1.x, p1.y]);
+                const points = distances.map((t) => {
+                    const p0 = path0.getPointAtLength(t * n0);
+                    const p1 = path1.getPointAtLength(t * n1);
+                    return d3.interpolate([p0.x, p0.y], [p1.x, p1.y]);
                 });
 
-                return function(t) {
-                return t < 1 ? "M" + points.map(function(p) { return p(t); }).join("L") : d1;
+                return (t) => {
+                    let n_p = points.map(p => p(t));
+                    let n_string = `M${n_p[0]}`;
+                    for(let i=1; i<n_p.length; i++) {
+                        // if distance between n_p[i] and n_p[i-1] is greater than precision, add an M command, otherwise an L
+                        if (Math.abs(n_p[i][0] - n_p[i-1][0]) > precision || Math.abs(n_p[i][1] - n_p[i-1][1]) > precision) {
+                            n_string += `M${n_p[i]}`;
+                        } else {
+                            n_string += `L${n_p[i]}`;
+                        }
+                    }
+                    return t < 1 ? n_string : d1;
                 };
             };
         }
@@ -141,7 +155,7 @@
 
 
         Promise.all([
-            d3.json('data/senedd_2026.topojson'),
+            d3.json('data/senedd_2026_simplified.topojson'),
             d3.json('data/senedd_2026.hexjson'),
             d3.json('data/senedd_2026_multiple.hexjson'),
             d3.csv('data/senedd_multiple_hexes.csv')
@@ -164,43 +178,19 @@
             function advance() {
                 
                 sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width-margin.left-margin.right, height-margin.top-margin.bottom);
+                console.log(sc_hexes_rendered);
 
-                svg.selectAll('g')
-                    .data(sc_hexes_rendered)
-                    .join(
-                        (enter) => {},
-                        (update) => {
-                            console.log(update);
-                            update
-                                .select('path')
-                                .transition()
-                                .duration(1000)
-                                .attr('d', function(hex) {
-                                    let existing_boundary = d3.select(this).attr('d');
-                                    let num_L = (existing_boundary.match(/L/g) || []).length;
-                                    let c_x = hex.x;
-                                    let c_y = hex.y;
-                                    let v = hex.vertices;
-                                    let new_v = [{x: c_x + v[0].x, y: c_y + v[0].y}];
-                                    for(let i=0; i<v.length; i++) {
-                                        let next_i = (i+1) % v.length;
-                                        let num_segments = num_L/v.length;
-                                        for(let j=1; j<num_segments; j++) {
-                                            let mid_x = c_x + (v[i].x + ((v[next_i].x-v[i].x) / num_segments) * j);
-                                            let mid_y = c_y + (v[i].y + ((v[next_i].y-v[i].y) / num_segments) * j);
-                                            new_v.push({x: mid_x, y: mid_y});
-                                        }
-                                        // new_v.push({x: c_x + v[next_i].x, y: c_y + v[next_i].y});
-                                    }
-                                    return `M${new_v.map(v => `${v.x},${v.y}`).join(' L')} Z`;
-                                })
-                                .attr('fill', '#888');
-                            // update
-                            //      .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`)
-                            //      .select('polygon')
-                            //         .attr('points', (hex) => hex.points);
-                        },
-                        (exit) => {});
+                sc_hexes_rendered.forEach(hex => {
+                    hex.lineString = `M${hex.vertices.map(v => `${hex.x + v.x},${hex.y + v.y}`).join('L')}Z`;
+                });
+
+                for(i = 1; i <= sc_hexes_rendered.length; i++) {
+                    d3.select(`#norhif${i}`)
+                        .select('path')
+                        .transition()
+                        .duration(2000)
+                        .attrTween('d', pathTween(sc_hexes_rendered.find(h => h.No_Rhif == i).lineString, 8));
+                }
             }
 
             d3.select('#advance_btn').on('click', advance);
@@ -214,17 +204,13 @@
                 .join((enter) => {
                     enter
                     .append('g')
+                    .attr('id', (d) => `norhif${d.properties.No_Rhif}`)
                     .append('path')
-                    .attr('d', (d) => {
-                        p = path(d);
-                        // count the number of L commands in the path
-                        let num_L = (p.match(/L/g) || []).length;
-                        console.log(`Path has ${num_L} line segments.`);
-                        return path(d);
-                    })
-                    .attr('fill', '#888' )
-                    .attr('stroke', '#ddd')
+                    .attr('d', (d) => path(d))
+                    .attr('fill', '#fff' )
+                    .attr('stroke', '#000')
                     .attr('stroke-width', '1px')
+                    .attr('id', (d) => d.properties.No_Rhif)
                     .on('click', clicked);
                 });
 
