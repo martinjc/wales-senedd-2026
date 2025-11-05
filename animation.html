@@ -53,16 +53,6 @@
 
     <script>
 
-        let party_details = {
-            'Labour': { name: 'Labour', colour: '#DC241f' },
-            'Conservative': { name: 'Conservative', colour: '#0087DC' },
-            'Green': { name: 'Green Party', colour: '#6AB023' },
-            'Liberal Democrats': { name: 'Liberal Democrats', colour: '#FDBB30' },
-            'Plaid Cymru': { name: 'Plaid Cymru', colour: '#008142' },
-            'Independent': { name: 'Independent', colour: '#aaa' },
-            'Reform UK': { name: 'Reform UK', colour: '#12B6CF' }
-        }
-
         let width = d3.select('#map').node().clientWidth;
 
         let height = 800;
@@ -78,33 +68,6 @@
 
         let projection = d3.geoMercator();
         let path = d3.geoPath().projection(projection);
-
-        let active = d3.select(null);
-
-        function reset(event, d) {
-            active.attr('opacity', '1.0');
-            active = d3.select(null);
-
-            d3.select('#info')
-                .classed('active', false);
-        }
-
-        function clicked(event, d) {
-            console.log(groups);
-            console.log(d);
-            if(active.node() === this) {
-                reset(event, d);
-            } else {
-                active.attr('opacity', '1.0')
-                active = d3.select(this);
-                active.attr('opacity', '0.2')
-                d3.select("#info")
-                        .classed("active", true);
-                if (d.English_Na) {
-                    d3.select('#sc_name').text(d.English_Na);
-                }
-            }
-        }
 
         function pathTween(d1, precision) {
             return function() {
@@ -132,11 +95,7 @@
                     let n_string = `M${n_p[0]}`;
                     for(let i=1; i<n_p.length; i++) {
                         // if distance between n_p[i] and n_p[i-1] is greater than precision, add an M command, otherwise an L
-                        if (Math.abs(n_p[i][0] - n_p[i-1][0]) > precision || Math.abs(n_p[i][1] - n_p[i-1][1]) > precision) {
-                            n_string += `M${n_p[i]}`;
-                        } else {
-                            n_string += `L${n_p[i]}`;
-                        }
+                        n_string += Math.abs(n_p[i][0] - n_p[i-1][0]) > precision || Math.abs(n_p[i][1] - n_p[i-1][1]) > precision ? `M${n_p[i]}` : `L${n_p[i]}`;
                     }
                     return t < 1 ? n_string : d1;
                 };
@@ -149,22 +108,7 @@
             d3.json('data/senedd_2026_simplified.topojson'),
             d3.json('data/senedd_2026.hexjson'),
             d3.json('data/senedd_2026_multiple.hexjson'),
-            d3.csv('data/senedd_multiple_hexes.csv')
-        ]).then(([sc_boundaries, sc_hexes, sc_hexes_multiple, sc_data]) => {
-
-            function getColour(hex, index){
-                let sc_info = sc_data.find(d => d.id === `${hex.No_Rhif}_${index}`);
-                if(sc_info) {
-                    let party = party_details[sc_info.Party];
-                    if(party) {
-                        return party.colour;
-                    } else {
-                        return 'purple';
-                    }
-                } else {
-                    return 'purple';
-                }
-            }
+        ]).then(([sc_boundaries, sc_hexes, sc_hexes_multiple]) => {
 
             function advance() {
                 const precision = 2;
@@ -223,25 +167,21 @@
                 .data(sc.features)
                 .join((enter) => {
                     g = enter
-                    .append('g')
-                    .attr('id', (d) => `norhif${d.properties.No_Rhif}`)
+                        .append('g')
+                        .attr('id', (d) => `norhif${d.properties.No_Rhif}`)
 
-                    g
-                    .append('path')
-                    .attr('d', (d) => path(d))
-                    .attr('fill', '#fff' )
-                    .attr('stroke', '#000')
-                    .attr('stroke-width', '1px')
-                    .attr('id', (d) => d.properties.No_Rhif)
-                    .on('click', clicked);
+                    g.append('path')
+                        .attr('d', (d) => path(d))
+                        .attr('fill', '#fff' )
+                        .attr('stroke', '#000')
+                        .attr('stroke-width', '1px')
+                        .attr('id', (d) => d.properties.No_Rhif)
                     
                     g.append('text')
-                    .attr('id', d => `text_${d.properties.No_Rhif}`)
-                    .text(d => d.properties.English_Na)
-                    .attr('transform', d => `translate(${path.centroid(d)[0]}, ${path.centroid(d)[1]}) rotate(15)`)
-                    // .attr('x', d => path.centroid(d)[0])
-                    // .attr('y', d => path.centroid(d)[1])
-                    .attr('text-anchor', 'middle')
+                        .attr('id', d => `text_${d.properties.No_Rhif}`)
+                        .text(d => d.properties.English_Na)
+                        .attr('transform', d => `translate(${path.centroid(d)[0]}, ${path.centroid(d)[1]}) rotate(15)`)
+                        .attr('text-anchor', 'middle');
                 });
 
                 const interval = setInterval(advance, 5000);
