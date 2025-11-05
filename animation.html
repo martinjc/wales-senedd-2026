@@ -27,17 +27,14 @@
         }
         #map {
             display: block;
-            width: 60%;
-            float: left;
-            margin-left: 30px;
-            margin-top: 30px;
+            width: 80%;
+            margin: auto;
+            padding-top: 80px;
         }
 
-        #controls {
-            display: block;
-            width: 35%;
-            float: left;
-            padding: 20px;
+        #map text {
+            font-size: 8px;
+            pointer-events: none;
         }
 
         #info {
@@ -52,9 +49,6 @@
 </head>
 <body>
     <div id='map'></div>
-    <div id="controls">
-        <input type="button" value="Advance" id="advance_btn" />
-    </div>
     <div id="info"><h1>This is <span id="sc_name"></span></h1></div>
 
     <script>
@@ -149,10 +143,7 @@
             };
         }
 
-
-        let groups = undefined;
-
-
+        let hexes = false;
 
         Promise.all([
             d3.json('data/senedd_2026_simplified.topojson'),
@@ -176,24 +167,53 @@
             }
 
             function advance() {
-                
-                sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width-margin.left-margin.right, height-margin.top-margin.bottom);
-                console.log(sc_hexes_rendered);
+                const precision = 2;
+                const delay = 500;
+                const duration = 1500;
 
-                sc_hexes_rendered.forEach(hex => {
-                    hex.lineString = `M${hex.vertices.map(v => `${hex.x + v.x},${hex.y + v.y}`).join('L')}Z`;
-                });
+                if(hexes) {
+                    sc = topojson.feature(sc_boundaries, sc_boundaries.objects.senedd_2026);
 
-                for(i = 1; i <= sc_hexes_rendered.length; i++) {
-                    d3.select(`#norhif${i}`)
-                        .select('path')
-                        .transition()
-                        .duration(2000)
-                        .attrTween('d', pathTween(sc_hexes_rendered.find(h => h.No_Rhif == i).lineString, 8));
+                    for(i = 1; i <= sc_hexes_rendered.length; i++) {
+                        d3.select(`#norhif${i}`)
+                            .select('path')
+                            .transition()
+                            .delay(delay)
+                            .duration(duration)
+                            .attrTween('d', pathTween(path(sc.features.find(f => f.properties.No_Rhif == i)), precision));
+                        d3.select(`#norhif${i}`)
+                            .select('text')
+                            .transition()
+                            .delay(delay)
+                            .duration(duration)
+                            .attr('transform', `translate(${path.centroid(sc.features.find(f => f.properties.No_Rhif == i))[0]}, ${path.centroid(sc.features.find(f => f.properties.No_Rhif == i))[1]}) rotate(15)`);
+                    }
+                    hexes = false;
+                } else {
+                    sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width-margin.left-margin.right, height-margin.top-margin.bottom);
+
+                    sc_hexes_rendered.forEach(hex => {
+                        hex.lineString = `M${hex.vertices.map(v => `${hex.x + margin.left + v.x},${hex.y + margin.top + v.y}`).join('L')}Z`;
+                    });
+
+                    for(i = 1; i <= sc_hexes_rendered.length; i++) {
+                        d3.select(`#norhif${i}`)
+                            .select('path')
+                            .transition()
+                            .delay(delay)
+                            .duration(duration)
+                            .attrTween('d', pathTween(sc_hexes_rendered.find(h => h.No_Rhif == i).lineString, precision));
+
+                        d3.select(`#norhif${i}`)
+                            .select('text')
+                            .transition()
+                            .delay(delay)
+                            .duration(duration)
+                            .attr('transform', `translate(${sc_hexes_rendered.find(h => h.No_Rhif == i).x+margin.left}, ${sc_hexes_rendered.find(h => h.No_Rhif == i).y+margin.top}) rotate(0)`);
+                    }
+                    hexes = true;
                 }
             }
-
-            d3.select('#advance_btn').on('click', advance);
 
             let sc = topojson.feature(sc_boundaries, sc_boundaries.objects.senedd_2026);
 
@@ -202,9 +222,11 @@
             groups = svg.selectAll('g')
                 .data(sc.features)
                 .join((enter) => {
-                    enter
+                    g = enter
                     .append('g')
                     .attr('id', (d) => `norhif${d.properties.No_Rhif}`)
+
+                    g
                     .append('path')
                     .attr('d', (d) => path(d))
                     .attr('fill', '#fff' )
@@ -212,63 +234,17 @@
                     .attr('stroke-width', '1px')
                     .attr('id', (d) => d.properties.No_Rhif)
                     .on('click', clicked);
+                    
+                    g.append('text')
+                    .attr('id', d => `text_${d.properties.No_Rhif}`)
+                    .text(d => d.properties.English_Na)
+                    .attr('transform', d => `translate(${path.centroid(d)[0]}, ${path.centroid(d)[1]}) rotate(15)`)
+                    // .attr('x', d => path.centroid(d)[0])
+                    // .attr('y', d => path.centroid(d)[1])
+                    .attr('text-anchor', 'middle')
                 });
 
-
-            // sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width-margin.left-margin.right, height-margin.top-margin.bottom);
-            // let sc_hexmap = sc_svg.selectAll('g')
-            //     .data(sc_hexes_rendered)
-            //     .join((enter) => {
-            //         let g = enter.append('g')
-            //             .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`);
-
-            //         g.append('polygon')
-            //             .attr('points', (hex) => hex.points)
-            //             .attr('stroke', '#fff')
-            //             .attr('fill', '#ccc')
-            //             .attr('stroke-width', 10)
-            //             .attr('id', (hex) => hex.key)
-            //             .attr('data-name', (hex) => hex.name)
-            //             .on('click', clicked);
-
-            //         for(let i=1; i<=6; i++ ){
-            //             g.append('polygon')
-            //                 .attr('points', (hex) => `0,0 ${hex.vertices[i-1].x},${hex.vertices[i-1].y} ${hex.vertices[i < 6 ? i : 0].x},${hex.vertices[i <  6 ? i : 0].y}`)
-            //                 .attr('fill', (hex) => getColour(hex, i))
-            //                 .attr('stroke', '#eee')
-            //                 .attr('stroke-width', 0.5)
-            //                 .on('click', clicked);
-            //         }
-            //     });
-            // sc_hexes_multiple_rendered = d3.renderHexJSON(sc_hexes_multiple, width-margin.left-margin.right, height-margin.top-margin.bottom);
-            // let scer_hexmap = scer_svg.selectAll('g')
-            //     .data(sc_hexes_multiple_rendered)
-            //     .join((enter) => {
-            //         enter.append('g')
-            //             .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`)
-            //             .append('polygon')
-            //             .attr('points', (hex) => hex.points)
-            //             .attr('stroke', '#eee')
-            //             .attr('fill', (hex) => getColour(hex, hex.Segment))
-            //             .attr('stroke-width', 1)
-            //             .attr('id', (hex) => hex.key)
-            //             .attr('data-name', (hex) => hex.name)
-            //             .on('click', clicked);
-            //     });
-
-            // sc_boundaries = d3.getBoundarySegmentsForHexJSON(sc_hexes_multiple, width-margin.left-margin.right, height-margin.top-margin.bottom, "English_Na");
-            // let boundaries = scer_svg.selectAll('line')
-            //     .data(sc_boundaries)
-            //     .join((enter) => {
-            //         enter.append('line')
-            //             .attr('x1', (boundary) => boundary.x1+margin.left)
-            //             .attr('y1', (boundary) => boundary.y1+margin.top)
-            //             .attr('x2', (boundary) => boundary.x2+margin.left)
-            //             .attr('y2', (boundary) => boundary.y2+margin.top)
-            //             .attr('fill', 'none')
-            //             .attr('stroke', '#fff')
-            //             .attr('stroke-width', 5)
-            //     });
+                const interval = setInterval(advance, 5000);
             });
 
     </script>
