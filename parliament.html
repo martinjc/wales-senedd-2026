@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="//d3js.org/d3.v6.min.js"></script>
+    <script src="//unpkg.com/d3-hexjson"></script>
+    <script src="//unpkg.com/topojson@3"></script>
+    <script src="lib/d3-parliament-chart.js"></script>
+
+    <title>Wales Senedd Constituency and Electoral Region Hexmap</title>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            padding: 0px;
+
+            height: 100%;
+            width: 100%;
+
+            background-color: #ddd;
+
+            position: relative;
+
+            font-family: "Open Sans", sans-serif;
+            color: #555;
+        }
+        #map {
+            display: block;
+            width: 60%;
+            margin: auto;
+            padding-top: 80px;
+        }
+
+        #map text {
+            font-size: 8px;
+            pointer-events: none;
+        }
+
+        #info {
+            clear: both;
+            visibility: hidden;
+            padding: 30px;
+        }
+        #info.active {
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <div id='map'></div>
+    <div id="info"><h1>This is <span id="sc_name"></span></h1></div>
+
+    <script>
+
+        let width = d3.select('#map').node().clientWidth;
+
+        let height = 800;
+
+        let margin = {
+            top: 30,
+            bottom: 30,
+            left: 30,
+            right: 30
+        }
+
+        let party_details = {
+            'Labour': { name: 'Labour', colour: '#DC241f' },
+            'Plaid Cymru': { name: 'Plaid Cymru', colour: '#008142' },
+            'Green': { name: 'Green Party', colour: '#6AB023' },
+            'Liberal Democrats': { name: 'Liberal Democrats', colour: '#FDBB30' },
+            'Independent': { name: 'Independent', colour: '#aaa' },
+            'Conservative': { name: 'Conservative', colour: '#0087DC' },
+            'Reform UK': { name: 'Reform UK', colour: '#12B6CF' }
+        }
+
+        let parties = Object.keys(party_details);
+
+        let svg = d3.select('#map').append('svg').attr("width", width).attr('height', height);
+
+        Promise.all([
+            d3.csv('data/senedd_multiple_hexes.csv'),
+        ]).then(([sc_data]) => {
+
+            sc_data.sort((a, b) => {
+                return parties.indexOf(a.Party) - parties.indexOf(b.Party);
+            }); 
+            pc = d3.parliamentChart(sc_data, width);
+            pc.sections(1);
+            pc.sectionGap(0);
+            pc.seatRadius(20);
+            pc.rowHeight(60);
+            console.log(pc.data());
+
+            svg.selectAll('g')
+                .data(pc.data())
+                .enter()
+                .append('g')
+                .attr('transform', d => `translate(${d.x}, ${d.y})`)
+                .append('polygon')
+                        .attr('points', d => [
+                            [-15, -15],
+                            [15, -15],
+                            [0, 15]
+                        ])
+                        .attr('fill', d => party_details[d.Party].colour)
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
+
+                    // g.append('text')
+                    //     .attr('text-anchor', 'middle')
+                    //     .attr('dy', '0.35em')
+                    //     .text(d.constituency_code);
+        });
+
+    </script>
+
+</body>
+</html>
