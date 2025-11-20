@@ -68,7 +68,7 @@
 
         let projection = d3.geoMercator();
         let path = d3.geoPath().projection(projection);
-
+        
         function pathTween(d1, precision) {
             return function() {
                 const path0 = this;
@@ -125,12 +125,6 @@
                             .delay(delay)
                             .duration(duration)
                             .attrTween('d', pathTween(path(sc.features.find(f => f.properties.No_Rhif == i)), precision));
-                        d3.select(`#norhif${i}`)
-                            .select('text')
-                            .transition()
-                            .delay(delay)
-                            .duration(duration)
-                            .attr('transform', `translate(${path.centroid(sc.features.find(f => f.properties.No_Rhif == i))[0]}, ${path.centroid(sc.features.find(f => f.properties.No_Rhif == i))[1]}) rotate(15)`);
                     }
                     hexes = false;
                 } else {
@@ -147,13 +141,6 @@
                             .delay(delay)
                             .duration(duration)
                             .attrTween('d', pathTween(sc_hexes_rendered.find(h => h.No_Rhif == i).lineString, precision));
-
-                        d3.select(`#norhif${i}`)
-                            .select('text')
-                            .transition()
-                            .delay(delay)
-                            .duration(duration)
-                            .attr('transform', `translate(${sc_hexes_rendered.find(h => h.No_Rhif == i).x+margin.left}, ${sc_hexes_rendered.find(h => h.No_Rhif == i).y+margin.top}) rotate(0)`);
                     }
                     hexes = true;
                 }
@@ -176,12 +163,6 @@
                         .attr('stroke', '#000')
                         .attr('stroke-width', '1px')
                         .attr('id', (d) => d.properties.No_Rhif)
-                    
-                    g.append('text')
-                        .attr('id', d => `text_${d.properties.No_Rhif}`)
-                        .text(d => d.properties.English_Na)
-                        .attr('transform', d => `translate(${path.centroid(d)[0]}, ${path.centroid(d)[1]}) rotate(15)`)
-                        .attr('text-anchor', 'middle');
                 });
 
                 const interval = setInterval(advance, 5000);
