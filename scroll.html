@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>Scrollytelling Fixed under scroll minimum example</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            min-height: 1280px;
+            color: #3b3b3b;
+            font-size: 24px;
+        }
+
+        p, h1, h2, h3, h4, a {
+            margin: 0;
+            font-weight: 400;
+        }
+
+		#scrolly {
+			position: relative;
+			background-color: #f3f3f3;
+		}
+
+        @media (min-width: 600px) {
+            #scrolly {
+                max-width: 800px;
+                margin: auto;
+            }
+        }
+
+		article {
+			position: relative;
+		}
+
+		figure {
+			position: -webkit-sticky;
+			position: sticky;
+            top: 0;
+			left: 0;
+			width: 100%;
+			margin: 0;
+			-webkit-transform: translate3d(0, 0, 0);
+			-moz-transform: translate3d(0, 0, 0);
+			transform: translate3d(0, 0, 0);
+			background-color: #8a8a8a;
+			z-index: 1;
+		}
+
+		.step {
+			margin: 0;
+			color: #fff;
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+
+		.step:last-child {
+			margin-bottom: 0;
+		}
+
+		.step.is-active p {
+			background-color: goldenrod;
+			color: #3b3b3b;
+		}
+
+		.step p {
+			text-align: center;
+			padding: 1rem;
+			font-size: 1.5rem;
+			background-color: #3b3b3b;
+		}
+	</style>
+</head>
+
+<body>
+	<main>
+
+		<section id="scrolly">
+			<figure>
+			</figure>
+
+			<article>
+				<div class="step" data-step="1">
+					<p>STEP 1</p>
+				</div>
+				<div class="step" data-step="2">
+					<p>STEP 2</p>
+				</div>
+				<div class="step" data-step="3">
+					<p>STEP 3</p>
+				</div>
+				<div class="step" data-step="4">
+					<p>STEP 4</p>
+				</div>
+			</article>
+		</section>
+	</main>
+
+	<script src="https://unpkg.com/d3@5.9.1/dist/d3.min.js"></script>
+	<script src="lib/scrollama.min.js"></script>
+	<script>
+		// using d3 for convenience
+		var main = d3.select("main");
+		var scrolly = main.select("#scrolly");
+		var figure = scrolly.select("figure");
+		var article = scrolly.select("article");
+		var step = article.selectAll(".step");
+
+		// initialize the scrollama
+		var scroller = scrollama();
+
+		// generic window resize listener event
+		function handleResize() {
+			// 1. update height of step elements
+            const half_height = Math.floor(window.innerHeight / 2);
+			
+			step.style("height", half_height + "px");
+			figure.style("height", half_height + "px");
+
+			// 3. tell scrollama to update new element dimensions
+			scroller.resize();
+		}
+
+		// scrollama event handlers
+		function handleStepEnter(response) {
+			console.log(response);
+
+			// add color to current step only
+			step.classed("is-active", (d, i) => i === response.index);
+
+			// update graphic based on step
+			figure.select("p").text(response.index + 1);
+		}
+
+
+		function init() {
+
+			// 1. force a resize on load to ensure proper dimensions are sent to scrollama
+			handleResize();
+
+			scroller
+				.setup({
+					step: "#scrolly article .step",
+					offset: 0.51,
+					debug: false
+				})
+				.onStepEnter(handleStepEnter);
+
+            window.addEventListener("resize", handleResize);
+		}
+
+		// kick things off
+		init();
+	</script>
+</body>
+
+</html>
