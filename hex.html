@@ -131,7 +131,7 @@
                         .attr('points', (hex) => hex.points)
                         .attr('stroke', '#fff')
                         .attr('fill', '#ccc')
-                        .attr('stroke-width', 10)
+                        .attr('stroke-width', 3)
                         .attr('id', (hex) => hex.key)
                         .attr('data-name', (hex) => hex.name)
                         .on('click', clicked);
@@ -172,7 +172,7 @@
                         .attr('y2', (boundary) => boundary.y2+margin.top)
                         .attr('fill', 'none')
                         .attr('stroke', '#fff')
-                        .attr('stroke-width', 5)
+                        .attr('stroke-width', 3)
                 });
             });
 
