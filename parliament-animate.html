@@ -28,7 +28,7 @@
         }
         #map {
             display: block;
-            width: 60%;
+            width: 80%;
             margin: auto;
             padding-top: 80px;
         }
@@ -72,7 +72,8 @@
             'Liberal Democrats': { name: 'Liberal Democrats', colour: '#FDBB30' },
             'Independent': { name: 'Independent', colour: '#aaa' },
             'Conservative': { name: 'Conservative', colour: '#0087DC' },
-            'Reform UK': { name: 'Reform UK', colour: '#12B6CF' }
+            'Reform UK': { name: 'Reform UK', colour: '#12B6CF' },
+            'No Result': { name: 'No Result', colour: '#eee'}
         }
 
         let parties = Object.keys(party_details);
@@ -102,6 +103,13 @@
 
             console.log(pc.data());
 
+            triangles_data = pc.data();
+            triangles_data.forEach((d, i) => {
+                d.parent_hex = sc_hexes_rendered.find(h => h.No_Rhif === d.No_Rhif);
+            });
+
+            console.log(triangles_data);
+
             function getColour(hex, index){
                 let sc_info = sc_data.find(d => d.id === `${hex.No_Rhif}_${index}`);
                 if(sc_info) {
@@ -120,63 +128,44 @@
 
                 if(hexes) {
                     svg.selectAll('polygon')
-                        .data(pc.data())
-                        .join(
-                            (enter) => {
-                                enter.append('polygon');
-                            },
-                            (update) => {
-                            console.log(update);
-                            update
-                                .transition()
-                                .delay(100)
-                                .duration(2000)
-                                .attr('transform', d => `translate(${d.x}, ${d.y})`)
-                                .attr('points', d => [
-                                    [-15, -15],
-                                    [15, -15],
-                                    [0, 15]
-                                ])
-                                .attr('fill', d => party_details[d.Party].colour)
-                                .attr('stroke', '#fff')
-                                .attr('stroke-width', 2)
-                        });
+                        .transition()
+                        .delay(100)
+                        .duration(2000)
+                        .attr('transform', d => `translate(${d.x}, ${d.y})`)
+                        .attr('points', d => [
+                            [-20, -20],
+                            [20, -20],
+                            [0, 20]
+                        ])
+                        .attr('fill', d => party_details[d.Party].colour)
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
                     hexes = false;
                 } else {
-                    svg.selectAll('g')
-                        .data(sc_hexes_rendered)
-                        .join((update) => {
-                            console.log(update);
-                            update.selectAll('polygon')
-                                .transition()
-                                .delay(100)
-                                .duration(2000)
-                                .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`)
-                                .attr('points', (hex) => `0,0 ${hex.vertices[i-1].x},${hex.vertices[i-1].y} ${hex.vertices[i < 6 ? i : 0].x},${hex.vertices[i <  6 ? i : 0].y}`)
-                                .attr('fill', (hex) => getColour(hex, i))
-                                .attr('stroke', '#eee')
-                                .attr('stroke-width', 0.5);
-                        });   
+                    svg.selectAll('polygon')
+                        .transition()
+                        .delay(100)
+                        .duration(2000)
+                        .attr('transform', (t) => `translate(${t.parent_hex.x+margin.left},${t.parent_hex.y+margin.top})`)
+                        .attr('points', (t) => `0,0 ${t.parent_hex.vertices[+t.Segment-1].x},${t.parent_hex.vertices[+t.Segment-1].y} ${t.parent_hex.vertices[+t.Segment < 6 ? +t.Segment : 0].x},${t.parent_hex.vertices[+t.Segment <  6 ? +t.Segment : 0].y}`)
+                        .attr('fill', (t) => getColour(t, t.Segment))
+                        .attr('stroke', '#eee')
+                        .attr('stroke-width', 0.5);
                     hexes = true;         
                 }
             }
 
             let sc_hexmap = svg.selectAll('g')
-                .data(sc_hexes_rendered)
+                .data(triangles_data)
                 .join((enter) => {
-                    let g = enter.append('g');
-
-                    for(let i=1; i<=6; i++ ){
-                        g.append('polygon')
-                            .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`)
-                            .attr('id', (hex) => `${hex.key}_seg${i}`)
-                            .attr('points', (hex) => `0,0 ${hex.vertices[i-1].x},${hex.vertices[i-1].y} ${hex.vertices[i < 6 ? i : 0].x},${hex.vertices[i <  6 ? i : 0].y}`)
-                            .attr('fill', (hex) => getColour(hex, i))
+                    enter.append('polygon')
+                            .attr('transform', (t) => `translate(${t.parent_hex.x+margin.left},${t.parent_hex.y+margin.top})`)
+                            .attr('id', (t) => `${t.No_Rhif}_${t.Segment}`)
+                            .attr('points', (t) => `0,0 ${t.parent_hex.vertices[+t.Segment-1].x},${t.parent_hex.vertices[+t.Segment-1].y} ${t.parent_hex.vertices[+t.Segment < 6 ? +t.Segment : 0].x},${t.parent_hex.vertices[+t.Segment <  6 ? +t.Segment : 0].y}`)
+                            .attr('fill', (t) => getColour(t, t.Segment))
                             .attr('stroke', '#eee')
                             .attr('stroke-width', 0.5);
-                    }
-                });            
-                
+                    });            
                 const interval = setInterval(advance, 5000);
         });
 
