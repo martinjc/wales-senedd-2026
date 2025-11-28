@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>Scrollytelling Wales Senedd Elections</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<script src="//d3js.org/d3.v7.min.js"></script>
+    <script src="//unpkg.com/d3-hexjson"></script>
+    <script src="//unpkg.com/topojson@3"></script>
+	<script src="lib/scrollama.min.js"></script>
+	<script src="lib/d3-parliament-chart.js"></script>
+
+	<style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            min-height: 1280px;
+            color: #3b3b3b;
+            font-size: 24px;
+        }
+
+        p, h1, h2, h3, h4, a {
+            margin: 0;
+            font-weight: 400;
+        }
+
+		#scrolly {
+			position: relative;
+			background-color: #f3f3f3;
+		}
+
+        @media (min-width: 600px) {
+            #scrolly {
+                max-width: 800px;
+                margin: auto;
+            }
+        }
+
+		article {
+			position: relative;
+		}
+
+		figure {
+			position: -webkit-sticky;
+			position: sticky;
+            top: 0;
+			left: 0;
+			width: 100%;
+			margin: 0;
+			-webkit-transform: translate3d(0, 0, 0);
+			-moz-transform: translate3d(0, 0, 0);
+			transform: translate3d(0, 0, 0);
+			background-color: #ccc;
+			z-index: 1;
+		}
+
+		.step {
+			margin: 0;
+			color: #fff;
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+
+		.step:last-child {
+			margin-bottom: 0;
+		}
+
+		.step.is-active h1 {
+			background-color: goldenrod;
+			color: #3b3b3b;
+		}
+
+		.step h1 {
+			text-align: center;
+			padding: 1rem;
+			font-size: 1.5rem;
+			background-color: #3b3b3b;
+		}
+
+		.step p {
+			text-align: center;
+			padding: 1rem;
+			font-size: 1.5rem;
+			background-color: #3b3b3b;
+			margin: auto;
+		}
+	</style>
+</head>
+
+<body>
+	<main>
+
+		<section id="scrolly">
+			<figure>
+			</figure>
+
+			<article>
+				<div class="step" data-step="1">
+					<p>Next year, Wales will be holding parliamentary elections for the first time using a new fully proportional voting system</p>
+				</div>
+				<div class="step" data-step="2">
+					<p>In a "first past the post" election, each area elects one person, and to show the results we can colour the map according to the winning party</p>
+					<small>(these aren't real results, just some fake results to make a point)</small>
+				</div>
+				<div class="step" data-step="3">
+					<p>In the new proportional system, each area elects six people. we could divide the area into six and colour each part, but that looks pretty ugly</p>
+				</div>
+				<div class="step" data-step="4">
+					<p>What if instead of using actual geographic areas, we use hexagons to represent each area?</p>
+				</div>
+				<div class="step" data-step="5">
+					<p>Hexagons divide nicely into six triangles, so we can fill each hexagon with the six colours for the six elected representatives for each area</p>
+				</div>				
+				<div class="step" data-step="7">
+					<p>We can also represent the results using a representation of the parliament</p>
+				</div>
+				<div class="step" data-step="8">
+					<p>Taken together, we get an effective visualisation of the results of a proportional election in Wales. Probably</p>
+				</div>
+			</article>
+		</section>
+	</main>
+
+	<script>
+
+		// using d3 for convenience
+		let main = d3.select("main");
+		let scrolly = main.select("#scrolly");
+		let figure = scrolly.select("figure");
+		let article = scrolly.select("article");
+		let step = article.selectAll(".step");
+
+		// initialize the scrollama
+		let scroller = scrollama();
+
+		// set initial dimensions
+		let width = figure.node().clientWidth;
+		let height = figure.node().clientHeight;
+
+		const margin = {
+			top: 40,
+			bottom: 40,
+			left: 40,
+			right: 40
+		};
+
+        const party_details = {
+            'Labour': { name: 'Labour', colour: '#DC241f' },
+            'Conservative': { name: 'Conservative', colour: '#0087DC' },
+            'Green': { name: 'Green Party', colour: '#6AB023' },
+            'Liberal Democrats': { name: 'Liberal Democrats', colour: '#FDBB30' },
+            'Plaid Cymru': { name: 'Plaid Cymru', colour: '#008142' },
+            'Independent': { name: 'Independent', colour: '#aaa' },
+            'Reform UK': { name: 'Reform UK', colour: '#12B6CF' },
+            'No Result': { name: 'No Result', colour: '#eee'}
+        };
+
+		let svg = figure.append("svg")
+			.attr("width", width)
+			.attr("height", height);
+
+		const projection = d3.geoMercator();
+		const path = d3.geoPath().projection(projection);
+
+        const zoom = d3.zoom();
+
+		let active = d3.select(null);
+		
+		const precision = 2;
+		const delay = 200;
+		const duration = 1000;
+
+        function pathTween(d1, precision) {
+            return function() {
+                const path0 = this;
+                const path1 = path0.cloneNode();
+                path1.setAttribute("d", d1);
+                const n0 = path0.getTotalLength();
+                const n1 = path1.getTotalLength();
+
+                // Uniform sampling of distance based on specified precision.
+                const distances = [0];
+                const dt = precision / Math.max(n0, n1);
+                let i = 0; while ((i += dt) < 1) distances.push(i);
+                distances.push(1);
+
+                // Compute point-interpolators at each distance.
+                const points = distances.map((t) => {
+                    const p0 = path0.getPointAtLength(t * n0);
+                    const p1 = path1.getPointAtLength(t * n1);
+                    return d3.interpolate([p0.x, p0.y], [p1.x, p1.y]);
+                });
+
+                return (t) => {
+                    let n_p = points.map(p => p(t));
+                    let n_string = `M${n_p[0]}`;
+                    for(let i=1; i<n_p.length; i++) {
+                        // if distance between n_p[i] and n_p[i-1] is greater than precision, add an M command, otherwise an L
+                        n_string += Math.abs(n_p[i][0] - n_p[i-1][0]) > precision || Math.abs(n_p[i][1] - n_p[i-1][1]) > precision ? `M${n_p[i]}` : `L${n_p[i]}`;
+                    }
+                    return t < 1 ? n_string : d1;
+                };
+            };
+        }
+		
+		function fill_map(senedd_data) {
+			senedd_data.forEach((d) => {
+				const constituency_id = d.constituency_id;
+				const party = d.party;
+				const colour = party_details[party].colour;
+
+				svg.select(`#path_${constituency_id}`)
+					.transition()
+					.duration(500)
+					.attr('fill', colour);
+			});
+		}
+
+		function fill_map_proportional(senedd_data) {
+
+			con_results = d3.group(senedd_data, (d) => d.constituency_id);
+
+			con_results.forEach(rr => {
+				let region_seats = [];
+				for(let i=0; i<6; i++) {
+					region_seats.push(rr[i].Party);
+				}
+
+				let gradient = svg.append('defs')
+					.append('linearGradient')
+					.attr('id', `gradient_${rr[0].constituency_id}`);
+
+				gradient.attr(`x0`, `0`);
+				gradient.attr(`y0`, `0`);
+				gradient.attr(`x1`, `1`);
+				gradient.attr(`y1`, `1`);
+
+				region_seats.forEach((p, i) => {
+					gradient.append('stop')
+						.attr('offset', `${(i/6)*100}%`)
+						.attr('stop-color', party_details[p].colour);
+					gradient.append('stop')
+						.attr('offset', `${((i+1)/6)*100}%`)
+						.attr('stop-color', party_details[p].colour);
+				});
+				svg.select(`#path_${rr[0].constituency_id}`)
+							.attr('fill', `url(#gradient_${rr[0].constituency_id})`)
+			});
+		}
+
+		function empty_map() {
+			svg.selectAll('path')
+				.transition()
+				.duration(duration)
+				.attr('fill', '#eee');
+		}
+
+		function draw_map(sc_boundaries) {
+			// fit projection to boundaries
+			const geojson = topojson.feature(sc_boundaries, sc_boundaries.objects.senedd_2026);
+			projection.fitSize([width - margin.left - margin.right, height - margin.top - margin.bottom], geojson);
+
+			// draw boundaries
+            groups = svg.selectAll('g')
+                .data(geojson.features)
+                .join((enter) => {
+                    g = enter
+                        .append('g')
+                        .attr('id', (d) => d.properties.constituency_id)
+
+                    g.append('path')
+                        .attr('d', (d) => path(d))
+                        .attr('fill', '#eee' )
+                        .attr('stroke', '#222')
+                        .attr('stroke-width', '0.5px')
+                        .attr('id', (d) => `path_${d.properties.constituency_id}`);
+				});
+		}
+
+		function hex_to_map(sc_boundaries) {
+
+			sc = topojson.feature(sc_boundaries, sc_boundaries.objects.senedd_2026);
+
+			for(i = 1; i <= sc.features.length; i++) {
+				d3.select(`#${sc.features[i-1].properties.constituency_id}`)
+					.select('path')
+					.transition()
+					.delay(delay)
+					.duration(duration)
+					.attrTween('d', pathTween(path(sc.features.find(f => f.properties.No_Rhif == i)), precision));
+			}			
+		} 
+
+		function map_to_hexes(hex_data) {
+
+			sc_hexes_rendered = d3.renderHexJSON(hex_data, width-margin.left-margin.right, height-margin.top-margin.bottom);
+
+			sc_hexes_rendered.forEach(hex => {
+                hex.lineString = `M${hex.vertices.map(v => `${hex.x + margin.left + v.x},${hex.y + margin.top + v.y}`).join('L')}Z`;
+            });
+
+			for(i = 1; i <= sc_hexes_rendered.length; i++) {
+				svg.select(`#${sc_hexes_rendered[i-1].key}`)
+					.select('path')
+					.transition()
+					.duration(duration)
+					.attr('fill', '#fff')
+					.transition()
+					.delay(delay)
+					.duration(duration)
+					.attrTween('d', pathTween(sc_hexes_rendered.find(h => h.No_Rhif == i).lineString, precision));
+			}
+		}
+		
+		function init() {
+
+			Promise.all([
+				d3.json('data/senedd_2026_simplified.topojson'),
+				d3.json('data/senedd_2026.hexjson'),
+				d3.json('data/senedd_2026_multiple.hexjson'),
+				d3.csv('data/senedd_multiple_hexes.csv'),
+				d3.csv('data/fake_senedd.csv')
+			]).then(([sc_boundaries, sc_hexes, sc_hexes_multiple, senedd_data, fake_senedd]) => {
+
+				// 1. force a resize on load to ensure proper dimensions are sent to scrollama
+				handleResize();
+
+				scroller
+					.setup({
+						step: "#scrolly article .step",
+						offset: 0.51,
+						debug: false
+					})
+					.onStepEnter(handleStepEnter);
+
+				window.addEventListener("resize", handleResize);
+
+				// generic window resize listener event
+				function handleResize() {
+					// 1. update height of step elements
+					const half_page_height = Math.floor(window.innerHeight / 2);
+					
+					step.style("height", half_page_height + "px");
+					figure.style("height", half_page_height + "px");
+
+					// 2. update width/height of graphic element
+					width = figure.node().clientWidth;
+					height = figure.node().clientHeight;
+					svg.attr("width", width).attr("height", height);
+
+					// 3. tell scrollama to update new element dimensions
+					scroller.resize();
+				}
+
+				// scrollama event handlers
+				function handleStepEnter(response) {
+					console.log(response);
+
+					// add color to current step only
+					step.classed("is-active", (d, i) => i === response.index);
+
+					// update graphic based on step
+					if(response.index === 0) {
+						empty_map();				
+					} else if(response.index === 1) {
+						fill_map(fake_senedd);
+					} else if(response.index === 2) {
+						if(response.direction === 'up') {
+							hex_to_map(sc_boundaries);
+						}
+						fill_map_proportional(senedd_data);
+					} else if(response.index === 3) {
+						map_to_hexes(sc_hexes);
+					}
+				}
+				// load and render data here
+				draw_map(sc_boundaries);
+			});
+		}
+
+		// kick things off
+		init();
+	</script>
+</body>
+
+</html>
