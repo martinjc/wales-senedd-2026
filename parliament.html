@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -26,6 +27,7 @@
             font-family: "Open Sans", sans-serif;
             color: #555;
         }
+
         #map {
             display: block;
             width: 60%;
@@ -43,14 +45,18 @@
             visibility: hidden;
             padding: 30px;
         }
+
         #info.active {
             visibility: visible;
         }
     </style>
 </head>
+
 <body>
     <div id='map'></div>
-    <div id="info"><h1>This is <span id="sc_name"></span></h1></div>
+    <div id="info">
+        <h1>This is <span id="sc_name"></span></h1>
+    </div>
 
     <script>
 
@@ -73,7 +79,7 @@
             'Independent': { name: 'Independent', colour: '#aaa' },
             'Conservative': { name: 'Conservative', colour: '#0087DC' },
             'Reform UK': { name: 'Reform UK', colour: '#12B6CF' },
-            'No Result': { name: 'No Result', colour: '#eee'}
+            'No Result': { name: 'No Result', colour: '#eee' }
         }
 
         let parties = Object.keys(party_details);
@@ -84,9 +90,15 @@
             d3.csv('data/senedd_multiple_hexes.csv'),
         ]).then(([sc_data]) => {
 
+            function pointy_hex_corner(center, size, i) {
+                let angle_deg = 60 * i;
+                let angle_rad = Math.PI / 180 * angle_deg;
+                return [center[0] + size * Math.cos(angle_rad), center[1] + size * Math.sin(angle_rad)];
+            }
+
             sc_data.sort((a, b) => {
                 return parties.indexOf(a.Party) - parties.indexOf(b.Party);
-            }); 
+            });
             pc = d3.parliamentChart(sc_data, width);
             pc.sections(1);
             pc.sectionGap(0);
@@ -100,22 +112,21 @@
                 .append('g')
                 .attr('transform', d => `translate(${d.x}, ${d.y})`)
                 .append('polygon')
-                        .attr('points', d => [
-                            [-15, -15],
-                            [15, -15],
-                            [0, 15]
-                        ])
-                        .attr('fill', d => party_details[d.Party].colour)
-                        .attr('stroke', '#fff')
-                        .attr('stroke-width', 2);
+                .attr('points', d => [
+                    ...Array.from({ length: 6 }, (_, i) => pointy_hex_corner([0, 0], pc.seatRadius(), i)),
+                ])
+                .attr('fill', d => party_details[d.Party].colour)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
 
-                    // g.append('text')
-                    //     .attr('text-anchor', 'middle')
-                    //     .attr('dy', '0.35em')
-                    //     .text(d.constituency_code);
+            // g.append('text')
+            //     .attr('text-anchor', 'middle')
+            //     .attr('dy', '0.35em')
+            //     .text(d.constituency_code);
         });
 
     </script>
 
 </body>
+
 </html>

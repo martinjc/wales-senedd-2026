@@ -1,0 +1,773 @@
+{
+    "layout": "odd-r",
+    "hexes": {
+        "hex_1_1": {
+            "q": 9,
+            "r": 26,
+            "English_Na": "Bangor Conwy M\u00f4n",
+            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "No_Rhif": 1,
+            "colour": "#3cb44b"
+        },
+        "hex_1_2": {
+            "q": 10,
+            "r": 26,
+            "English_Na": "Bangor Conwy M\u00f4n",
+            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "No_Rhif": 1,
+            "colour": "#3cb44b"
+        },
+        "hex_1_3": {
+            "q": 11,
+            "r": 26,
+            "English_Na": "Bangor Conwy M\u00f4n",
+            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "No_Rhif": 1,
+            "colour": "#3cb44b"
+        },
+        "hex_1_4": {
+            "q": 9,
+            "r": 25,
+            "English_Na": "Bangor Conwy M\u00f4n",
+            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "No_Rhif": 1,
+            "colour": "#3cb44b"
+        },
+        "hex_1_5": {
+            "q": 10,
+            "r": 25,
+            "English_Na": "Bangor Conwy M\u00f4n",
+            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "No_Rhif": 1,
+            "colour": "#3cb44b"
+        },
+        "hex_1_6": {
+            "q": 11,
+            "r": 25,
+            "English_Na": "Bangor Conwy M\u00f4n",
+            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "No_Rhif": 1,
+            "colour": "#3cb44b"
+        },
+        "hex_2_1": {
+            "q": 13,
+            "r": 27,
+            "English_Na": "Clwyd",
+            "Enw_Cymrae": "Clwyd",
+            "No_Rhif": 2,
+            "colour": "#bcf60c"
+        },
+        "hex_2_2": {
+            "q": 14,
+            "r": 26,
+            "English_Na": "Clwyd",
+            "Enw_Cymrae": "Clwyd",
+            "No_Rhif": 2,
+            "colour": "#bcf60c"
+        },
+        "hex_2_3": {
+            "q": 12,
+            "r": 27,
+            "English_Na": "Clwyd",
+            "Enw_Cymrae": "Clwyd",
+            "No_Rhif": 2,
+            "colour": "#bcf60c"
+        },
+        "hex_2_4": {
+            "q": 13,
+            "r": 26,
+            "English_Na": "Clwyd",
+            "Enw_Cymrae": "Clwyd",
+            "No_Rhif": 2,
+            "colour": "#bcf60c"
+        },
+        "hex_2_5": {
+            "q": 13,
+            "r": 25,
+            "English_Na": "Clwyd",
+            "Enw_Cymrae": "Clwyd",
+            "No_Rhif": 2,
+            "colour": "#bcf60c"
+        },
+        "hex_2_6": {
+            "q": 14,
+            "r": 24,
+            "English_Na": "Clwyd",
+            "Enw_Cymrae": "Clwyd",
+            "No_Rhif": 2,
+            "colour": "#bcf60c"
+        },
+        "hex_3_1": {
+            "q": 15,
+            "r": 25,
+            "English_Na": "Fflint Wrecsam",
+            "Enw_Cymrae": "Fflint Wrecsam",
+            "No_Rhif": 3,
+            "colour": "#fabebe"
+        },
+        "hex_3_2": {
+            "q": 16,
+            "r": 24,
+            "English_Na": "Fflint Wrecsam",
+            "Enw_Cymrae": "Fflint Wrecsam",
+            "No_Rhif": 3,
+            "colour": "#fabebe"
+        },
+        "hex_3_3": {
+            "q": 15,
+            "r": 27,
+            "English_Na": "Fflint Wrecsam",
+            "Enw_Cymrae": "Fflint Wrecsam",
+            "No_Rhif": 3,
+            "colour": "#fabebe"
+        },
+        "hex_3_4": {
+            "q": 16,
+            "r": 26,
+            "English_Na": "Fflint Wrecsam",
+            "Enw_Cymrae": "Fflint Wrecsam",
+            "No_Rhif": 3,
+            "colour": "#fabebe"
+        },
+        "hex_3_5": {
+            "q": 16,
+            "r": 25,
+            "English_Na": "Fflint Wrecsam",
+            "Enw_Cymrae": "Fflint Wrecsam",
+            "No_Rhif": 3,
+            "colour": "#fabebe"
+        },
+        "hex_3_6": {
+            "q": 17,
+            "r": 24,
+            "English_Na": "Fflint Wrecsam",
+            "Enw_Cymrae": "Fflint Wrecsam",
+            "No_Rhif": 3,
+            "colour": "#fabebe"
+        },
+        "hex_4_1": {
+            "q": 14,
+            "r": 20,
+            "English_Na": "Gwynedd Maldwyn",
+            "Enw_Cymrae": "Gwynedd Maldwyn",
+            "No_Rhif": 4,
+            "colour": "#008080"
+        },
+        "hex_4_2": {
+            "q": 13,
+            "r": 22,
+            "English_Na": "Gwynedd Maldwyn",
+            "Enw_Cymrae": "Gwynedd Maldwyn",
+            "No_Rhif": 4,
+            "colour": "#008080"
+        },
+        "hex_4_3": {
+            "q": 14,
+            "r": 22,
+            "English_Na": "Gwynedd Maldwyn",
+            "Enw_Cymrae": "Gwynedd Maldwyn",
+            "No_Rhif": 4,
+            "colour": "#008080"
+        },
+        "hex_4_4": {
+            "q": 15,
+            "r": 20,
+            "English_Na": "Gwynedd Maldwyn",
+            "Enw_Cymrae": "Gwynedd Maldwyn",
+            "No_Rhif": 4,
+            "colour": "#008080"
+        },
+        "hex_4_5": {
+            "q": 13,
+            "r": 21,
+            "English_Na": "Gwynedd Maldwyn",
+            "Enw_Cymrae": "Gwynedd Maldwyn",
+            "No_Rhif": 4,
+            "colour": "#008080"
+        },
+        "hex_4_6": {
+            "q": 14,
+            "r": 21,
+            "English_Na": "Gwynedd Maldwyn",
+            "Enw_Cymrae": "Gwynedd Maldwyn",
+            "No_Rhif": 4,
+            "colour": "#008080"
+        },
+        "hex_5_1": {
+            "q": 10,
+            "r": 16,
+            "English_Na": "Ceredigion Penfro",
+            "Enw_Cymrae": "Ceredigion Penfro",
+            "No_Rhif": 5,
+            "colour": "#f032e6"
+        },
+        "hex_5_2": {
+            "q": 9,
+            "r": 15,
+            "English_Na": "Ceredigion Penfro",
+            "Enw_Cymrae": "Ceredigion Penfro",
+            "No_Rhif": 5,
+            "colour": "#f032e6"
+        },
+        "hex_5_3": {
+            "q": 9,
+            "r": 14,
+            "English_Na": "Ceredigion Penfro",
+            "Enw_Cymrae": "Ceredigion Penfro",
+            "No_Rhif": 5,
+            "colour": "#f032e6"
+        },
+        "hex_5_4": {
+            "q": 8,
+            "r": 14,
+            "English_Na": "Ceredigion Penfro",
+            "Enw_Cymrae": "Ceredigion Penfro",
+            "No_Rhif": 5,
+            "colour": "#f032e6"
+        },
+        "hex_5_5": {
+            "q": 7,
+            "r": 14,
+            "English_Na": "Ceredigion Penfro",
+            "Enw_Cymrae": "Ceredigion Penfro",
+            "No_Rhif": 5,
+            "colour": "#f032e6"
+        },
+        "hex_5_6": {
+            "q": 6,
+            "r": 13,
+            "English_Na": "Ceredigion Penfro",
+            "Enw_Cymrae": "Ceredigion Penfro",
+            "No_Rhif": 5,
+            "colour": "#f032e6"
+        },
+        "hex_6_1": {
+            "q": 8,
+            "r": 12,
+            "English_Na": "Sir Gaerfyrddin",
+            "Enw_Cymrae": "Sir Gaerfyrddin",
+            "No_Rhif": 6,
+            "colour": "#aaffc3"
+        },
+        "hex_6_2": {
+            "q": 9,
+            "r": 12,
+            "English_Na": "Sir Gaerfyrddin",
+            "Enw_Cymrae": "Sir Gaerfyrddin",
+            "No_Rhif": 6,
+            "colour": "#aaffc3"
+        },
+        "hex_6_3": {
+            "q": 10,
+            "r": 12,
+            "English_Na": "Sir Gaerfyrddin",
+            "Enw_Cymrae": "Sir Gaerfyrddin",
+            "No_Rhif": 6,
+            "colour": "#aaffc3"
+        },
+        "hex_6_4": {
+            "q": 7,
+            "r": 11,
+            "English_Na": "Sir Gaerfyrddin",
+            "Enw_Cymrae": "Sir Gaerfyrddin",
+            "No_Rhif": 6,
+            "colour": "#aaffc3"
+        },
+        "hex_6_5": {
+            "q": 8,
+            "r": 11,
+            "English_Na": "Sir Gaerfyrddin",
+            "Enw_Cymrae": "Sir Gaerfyrddin",
+            "No_Rhif": 6,
+            "colour": "#aaffc3"
+        },
+        "hex_6_6": {
+            "q": 9,
+            "r": 11,
+            "English_Na": "Sir Gaerfyrddin",
+            "Enw_Cymrae": "Sir Gaerfyrddin",
+            "No_Rhif": 6,
+            "colour": "#aaffc3"
+        },
+        "hex_7_1": {
+            "q": 9,
+            "r": 9,
+            "English_Na": "G\u0175yr Abertawe",
+            "Enw_Cymrae": "G\u0175yr Abertawe",
+            "No_Rhif": 7,
+            "colour": "#e6beff"
+        },
+        "hex_7_2": {
+            "q": 10,
+            "r": 10,
+            "English_Na": "G\u0175yr Abertawe",
+            "Enw_Cymrae": "G\u0175yr Abertawe",
+            "No_Rhif": 7,
+            "colour": "#e6beff"
+        },
+        "hex_7_3": {
+            "q": 9,
+            "r": 8,
+            "English_Na": "G\u0175yr Abertawe",
+            "Enw_Cymrae": "G\u0175yr Abertawe",
+            "No_Rhif": 7,
+            "colour": "#e6beff"
+        },
+        "hex_7_4": {
+            "q": 10,
+            "r": 8,
+            "English_Na": "G\u0175yr Abertawe",
+            "Enw_Cymrae": "G\u0175yr Abertawe",
+            "No_Rhif": 7,
+            "colour": "#e6beff"
+        },
+        "hex_7_5": {
+            "q": 8,
+            "r": 7,
+            "English_Na": "G\u0175yr Abertawe",
+            "Enw_Cymrae": "G\u0175yr Abertawe",
+            "No_Rhif": 7,
+            "colour": "#e6beff"
+        },
+        "hex_7_6": {
+            "q": 9,
+            "r": 7,
+            "English_Na": "G\u0175yr Abertawe",
+            "Enw_Cymrae": "G\u0175yr Abertawe",
+            "No_Rhif": 7,
+            "colour": "#e6beff"
+        },
+        "hex_8_1": {
+            "q": 12,
+            "r": 15,
+            "English_Na": "Brycheiniog Tawe Nedd",
+            "Enw_Cymrae": "Brycheiniog Tawe Nedd",
+            "No_Rhif": 8,
+            "colour": "#4363d8"
+        },
+        "hex_8_2": {
+            "q": 13,
+            "r": 15,
+            "English_Na": "Brycheiniog Tawe Nedd",
+            "Enw_Cymrae": "Brycheiniog Tawe Nedd",
+            "No_Rhif": 8,
+            "colour": "#4363d8"
+        },
+        "hex_8_3": {
+            "q": 13,
+            "r": 14,
+            "English_Na": "Brycheiniog Tawe Nedd",
+            "Enw_Cymrae": "Brycheiniog Tawe Nedd",
+            "No_Rhif": 8,
+            "colour": "#4363d8"
+        },
+        "hex_8_4": {
+            "q": 14,
+            "r": 14,
+            "English_Na": "Brycheiniog Tawe Nedd",
+            "Enw_Cymrae": "Brycheiniog Tawe Nedd",
+            "No_Rhif": 8,
+            "colour": "#4363d8"
+        },
+        "hex_8_5": {
+            "q": 13,
+            "r": 13,
+            "English_Na": "Brycheiniog Tawe Nedd",
+            "Enw_Cymrae": "Brycheiniog Tawe Nedd",
+            "No_Rhif": 8,
+            "colour": "#4363d8"
+        },
+        "hex_8_6": {
+            "q": 14,
+            "r": 13,
+            "English_Na": "Brycheiniog Tawe Nedd",
+            "Enw_Cymrae": "Brycheiniog Tawe Nedd",
+            "No_Rhif": 8,
+            "colour": "#4363d8"
+        },
+        "hex_9_1": {
+            "q": 10,
+            "r": 9,
+            "English_Na": "Afan Ogwr Rhondda",
+            "Enw_Cymrae": "Afan Ogwr Rhondda",
+            "No_Rhif": 9,
+            "colour": "#e6194b"
+        },
+        "hex_9_2": {
+            "q": 11,
+            "r": 9,
+            "English_Na": "Afan Ogwr Rhondda",
+            "Enw_Cymrae": "Afan Ogwr Rhondda",
+            "No_Rhif": 9,
+            "colour": "#e6194b"
+        },
+        "hex_9_3": {
+            "q": 11,
+            "r": 10,
+            "English_Na": "Afan Ogwr Rhondda",
+            "Enw_Cymrae": "Afan Ogwr Rhondda",
+            "No_Rhif": 9,
+            "colour": "#e6194b"
+        },
+        "hex_9_4": {
+            "q": 11,
+            "r": 8,
+            "English_Na": "Afan Ogwr Rhondda",
+            "Enw_Cymrae": "Afan Ogwr Rhondda",
+            "No_Rhif": 9,
+            "colour": "#e6194b"
+        },
+        "hex_9_5": {
+            "q": 12,
+            "r": 8,
+            "English_Na": "Afan Ogwr Rhondda",
+            "Enw_Cymrae": "Afan Ogwr Rhondda",
+            "No_Rhif": 9,
+            "colour": "#e6194b"
+        },
+        "hex_9_6": {
+            "q": 12,
+            "r": 10,
+            "English_Na": "Afan Ogwr Rhondda",
+            "Enw_Cymrae": "Afan Ogwr Rhondda",
+            "No_Rhif": 9,
+            "colour": "#e6194b"
+        },
+        "hex_10_1": {
+            "q": 13,
+            "r": 10,
+            "English_Na": "Pontypridd Cynon Merthyr",
+            "Enw_Cymrae": "Pontypridd Cynon Merthyr",
+            "No_Rhif": 10,
+            "colour": "#fffac8"
+        },
+        "hex_10_2": {
+            "q": 14,
+            "r": 10,
+            "English_Na": "Pontypridd Cynon Merthyr",
+            "Enw_Cymrae": "Pontypridd Cynon Merthyr",
+            "No_Rhif": 10,
+            "colour": "#fffac8"
+        },
+        "hex_10_3": {
+            "q": 13,
+            "r": 9,
+            "English_Na": "Pontypridd Cynon Merthyr",
+            "Enw_Cymrae": "Pontypridd Cynon Merthyr",
+            "No_Rhif": 10,
+            "colour": "#fffac8"
+        },
+        "hex_10_4": {
+            "q": 12,
+            "r": 9,
+            "English_Na": "Pontypridd Cynon Merthyr",
+            "Enw_Cymrae": "Pontypridd Cynon Merthyr",
+            "No_Rhif": 10,
+            "colour": "#fffac8"
+        },
+        "hex_10_5": {
+            "q": 14,
+            "r": 8,
+            "English_Na": "Pontypridd Cynon Merthyr",
+            "Enw_Cymrae": "Pontypridd Cynon Merthyr",
+            "No_Rhif": 10,
+            "colour": "#fffac8"
+        },
+        "hex_10_6": {
+            "q": 13,
+            "r": 8,
+            "English_Na": "Pontypridd Cynon Merthyr",
+            "Enw_Cymrae": "Pontypridd Cynon Merthyr",
+            "No_Rhif": 10,
+            "colour": "#fffac8"
+        },
+        "hex_11_1": {
+            "q": 15,
+            "r": 10,
+            "English_Na": "Blaenau Gwent Caerffili Rhymni",
+            "Enw_Cymrae": "Blaenau Gwent Caerffili Rhymni",
+            "No_Rhif": 11,
+            "colour": "#ffe119"
+        },
+        "hex_11_2": {
+            "q": 14,
+            "r": 9,
+            "English_Na": "Blaenau Gwent Caerffili Rhymni",
+            "Enw_Cymrae": "Blaenau Gwent Caerffili Rhymni",
+            "No_Rhif": 11,
+            "colour": "#ffe119"
+        },
+        "hex_11_3": {
+            "q": 15,
+            "r": 8,
+            "English_Na": "Blaenau Gwent Caerffili Rhymni",
+            "Enw_Cymrae": "Blaenau Gwent Caerffili Rhymni",
+            "No_Rhif": 11,
+            "colour": "#ffe119"
+        },
+        "hex_11_4": {
+            "q": 14,
+            "r": 11,
+            "English_Na": "Blaenau Gwent Caerffili Rhymni",
+            "Enw_Cymrae": "Blaenau Gwent Caerffili Rhymni",
+            "No_Rhif": 11,
+            "colour": "#ffe119"
+        },
+        "hex_11_5": {
+            "q": 15,
+            "r": 11,
+            "English_Na": "Blaenau Gwent Caerffili Rhymni",
+            "Enw_Cymrae": "Blaenau Gwent Caerffili Rhymni",
+            "No_Rhif": 11,
+            "colour": "#ffe119"
+        },
+        "hex_11_6": {
+            "q": 16,
+            "r": 10,
+            "English_Na": "Blaenau Gwent Caerffili Rhymni",
+            "Enw_Cymrae": "Blaenau Gwent Caerffili Rhymni",
+            "No_Rhif": 11,
+            "colour": "#ffe119"
+        },
+        "hex_12_1": {
+            "q": 16,
+            "r": 11,
+            "English_Na": "Sir Fynwy Torfaen",
+            "Enw_Cymrae": "Sir Fynwy Torfaen",
+            "No_Rhif": 12,
+            "colour": "#800000"
+        },
+        "hex_12_2": {
+            "q": 17,
+            "r": 11,
+            "English_Na": "Sir Fynwy Torfaen",
+            "Enw_Cymrae": "Sir Fynwy Torfaen",
+            "No_Rhif": 12,
+            "colour": "#800000"
+        },
+        "hex_12_3": {
+            "q": 17,
+            "r": 10,
+            "English_Na": "Sir Fynwy Torfaen",
+            "Enw_Cymrae": "Sir Fynwy Torfaen",
+            "No_Rhif": 12,
+            "colour": "#800000"
+        },
+        "hex_12_4": {
+            "q": 18,
+            "r": 10,
+            "English_Na": "Sir Fynwy Torfaen",
+            "Enw_Cymrae": "Sir Fynwy Torfaen",
+            "No_Rhif": 12,
+            "colour": "#800000"
+        },
+        "hex_12_5": {
+            "q": 16,
+            "r": 9,
+            "English_Na": "Sir Fynwy Torfaen",
+            "Enw_Cymrae": "Sir Fynwy Torfaen",
+            "No_Rhif": 12,
+            "colour": "#800000"
+        },
+        "hex_12_6": {
+            "q": 17,
+            "r": 9,
+            "English_Na": "Sir Fynwy Torfaen",
+            "Enw_Cymrae": "Sir Fynwy Torfaen",
+            "No_Rhif": 12,
+            "colour": "#800000"
+        },
+        "hex_13_1": {
+            "q": 15,
+            "r": 9,
+            "English_Na": "Casnewydd Islwyn",
+            "Enw_Cymrae": "Casnewydd Islwyn",
+            "No_Rhif": 13,
+            "colour": "#46f0f0"
+        },
+        "hex_13_2": {
+            "q": 16,
+            "r": 8,
+            "English_Na": "Casnewydd Islwyn",
+            "Enw_Cymrae": "Casnewydd Islwyn",
+            "No_Rhif": 13,
+            "colour": "#46f0f0"
+        },
+        "hex_13_3": {
+            "q": 17,
+            "r": 8,
+            "English_Na": "Casnewydd Islwyn",
+            "Enw_Cymrae": "Casnewydd Islwyn",
+            "No_Rhif": 13,
+            "colour": "#46f0f0"
+        },
+        "hex_13_4": {
+            "q": 16,
+            "r": 7,
+            "English_Na": "Casnewydd Islwyn",
+            "Enw_Cymrae": "Casnewydd Islwyn",
+            "No_Rhif": 13,
+            "colour": "#46f0f0"
+        },
+        "hex_13_5": {
+            "q": 17,
+            "r": 7,
+            "English_Na": "Casnewydd Islwyn",
+            "Enw_Cymrae": "Casnewydd Islwyn",
+            "No_Rhif": 13,
+            "colour": "#46f0f0"
+        },
+        "hex_13_6": {
+            "q": 17,
+            "r": 6,
+            "English_Na": "Casnewydd Islwyn",
+            "Enw_Cymrae": "Casnewydd Islwyn",
+            "No_Rhif": 13,
+            "colour": "#46f0f0"
+        },
+        "hex_14_1": {
+            "q": 12,
+            "r": 7,
+            "English_Na": "Caerdydd Penarth",
+            "Enw_Cymrae": "Caerdydd Penarth",
+            "No_Rhif": 14,
+            "colour": "#911eb4"
+        },
+        "hex_14_2": {
+            "q": 13,
+            "r": 7,
+            "English_Na": "Caerdydd Penarth",
+            "Enw_Cymrae": "Caerdydd Penarth",
+            "No_Rhif": 14,
+            "colour": "#911eb4"
+        },
+        "hex_14_3": {
+            "q": 14,
+            "r": 6,
+            "English_Na": "Caerdydd Penarth",
+            "Enw_Cymrae": "Caerdydd Penarth",
+            "No_Rhif": 14,
+            "colour": "#911eb4"
+        },
+        "hex_14_4": {
+            "q": 14,
+            "r": 5,
+            "English_Na": "Caerdydd Penarth",
+            "Enw_Cymrae": "Caerdydd Penarth",
+            "No_Rhif": 14,
+            "colour": "#911eb4"
+        },
+        "hex_14_5": {
+            "q": 13,
+            "r": 6,
+            "English_Na": "Caerdydd Penarth",
+            "Enw_Cymrae": "Caerdydd Penarth",
+            "No_Rhif": 14,
+            "colour": "#911eb4"
+        },
+        "hex_14_6": {
+            "q": 13,
+            "r": 5,
+            "English_Na": "Caerdydd Penarth",
+            "Enw_Cymrae": "Caerdydd Penarth",
+            "No_Rhif": 14,
+            "colour": "#911eb4"
+        },
+        "hex_15_1": {
+            "q": 14,
+            "r": 7,
+            "English_Na": "Caerdydd Ffynnon Taf",
+            "Enw_Cymrae": "Caerdydd Ffynnon Taf",
+            "No_Rhif": 15,
+            "colour": "#f58231"
+        },
+        "hex_15_2": {
+            "q": 15,
+            "r": 7,
+            "English_Na": "Caerdydd Ffynnon Taf",
+            "Enw_Cymrae": "Caerdydd Ffynnon Taf",
+            "No_Rhif": 15,
+            "colour": "#f58231"
+        },
+        "hex_15_3": {
+            "q": 15,
+            "r": 6,
+            "English_Na": "Caerdydd Ffynnon Taf",
+            "Enw_Cymrae": "Caerdydd Ffynnon Taf",
+            "No_Rhif": 15,
+            "colour": "#f58231"
+        },
+        "hex_15_4": {
+            "q": 16,
+            "r": 6,
+            "English_Na": "Caerdydd Ffynnon Taf",
+            "Enw_Cymrae": "Caerdydd Ffynnon Taf",
+            "No_Rhif": 15,
+            "colour": "#f58231"
+        },
+        "hex_15_5": {
+            "q": 15,
+            "r": 5,
+            "English_Na": "Caerdydd Ffynnon Taf",
+            "Enw_Cymrae": "Caerdydd Ffynnon Taf",
+            "No_Rhif": 15,
+            "colour": "#f58231"
+        },
+        "hex_15_6": {
+            "q": 16,
+            "r": 5,
+            "English_Na": "Caerdydd Ffynnon Taf",
+            "Enw_Cymrae": "Caerdydd Ffynnon Taf",
+            "No_Rhif": 15,
+            "colour": "#f58231"
+        },
+        "hex_16_1": {
+            "q": 11,
+            "r": 7,
+            "English_Na": "Pen-y-bont Bro Morgannwg",
+            "Enw_Cymrae": "Pen-y-bont Bro Morgannwg",
+            "No_Rhif": 16,
+            "colour": "#9a6324"
+        },
+        "hex_16_2": {
+            "q": 10,
+            "r": 7,
+            "English_Na": "Pen-y-bont Bro Morgannwg",
+            "Enw_Cymrae": "Pen-y-bont Bro Morgannwg",
+            "No_Rhif": 16,
+            "colour": "#9a6324"
+        },
+        "hex_16_3": {
+            "q": 10,
+            "r": 6,
+            "English_Na": "Pen-y-bont Bro Morgannwg",
+            "Enw_Cymrae": "Pen-y-bont Bro Morgannwg",
+            "No_Rhif": 16,
+            "colour": "#9a6324"
+        },
+        "hex_16_4": {
+            "q": 11,
+            "r": 6,
+            "English_Na": "Pen-y-bont Bro Morgannwg",
+            "Enw_Cymrae": "Pen-y-bont Bro Morgannwg",
+            "No_Rhif": 16,
+            "colour": "#9a6324"
+        },
+        "hex_16_5": {
+            "q": 12,
+            "r": 6,
+            "English_Na": "Pen-y-bont Bro Morgannwg",
+            "Enw_Cymrae": "Pen-y-bont Bro Morgannwg",
+            "No_Rhif": 16,
+            "colour": "#9a6324"
+        },
+        "hex_16_6": {
+            "q": 12,
+            "r": 5,
+            "English_Na": "Pen-y-bont Bro Morgannwg",
+            "Enw_Cymrae": "Pen-y-bont Bro Morgannwg",
+            "No_Rhif": 16,
+            "colour": "#9a6324"
+        }
+    }
+}

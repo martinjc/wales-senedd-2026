@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -25,6 +26,7 @@
             font-family: "Open Sans", sans-serif;
             color: #555;
         }
+
         #map {
             display: block;
             width: 80%;
@@ -42,14 +44,18 @@
             visibility: hidden;
             padding: 30px;
         }
+
         #info.active {
             visibility: visible;
         }
     </style>
 </head>
+
 <body>
     <div id='map'></div>
-    <div id="info"><h1>This is <span id="sc_name"></span></h1></div>
+    <div id="info">
+        <h1>This is <span id="sc_name"></span></h1>
+    </div>
 
     <script>
 
@@ -68,9 +74,9 @@
 
         let projection = d3.geoMercator();
         let path = d3.geoPath().projection(projection);
-        
+
         function pathTween(d1, precision) {
-            return function() {
+            return function () {
                 const path0 = this;
                 const path1 = path0.cloneNode();
                 path1.setAttribute("d", d1);
@@ -93,9 +99,9 @@
                 return (t) => {
                     let n_p = points.map(p => p(t));
                     let n_string = `M${n_p[0]}`;
-                    for(let i=1; i<n_p.length; i++) {
+                    for (let i = 1; i < n_p.length; i++) {
                         // if distance between n_p[i] and n_p[i-1] is greater than precision, add an M command, otherwise an L
-                        n_string += Math.abs(n_p[i][0] - n_p[i-1][0]) > precision || Math.abs(n_p[i][1] - n_p[i-1][1]) > precision ? `M${n_p[i]}` : `L${n_p[i]}`;
+                        n_string += Math.abs(n_p[i][0] - n_p[i - 1][0]) > precision || Math.abs(n_p[i][1] - n_p[i - 1][1]) > precision ? `M${n_p[i]}` : `L${n_p[i]}`;
                     }
                     return t < 1 ? n_string : d1;
                 };
@@ -103,6 +109,39 @@
         }
 
         let hexes = false;
+
+        function wrap(text, width) {
+            text.each(function () {
+                var text = d3.select(this),
+                    words = text.text().split(/\s+/).reverse(),
+                    word,
+                    line = [],
+                    lineNumber = 0,
+                    lineHeight = 1.1, // ems
+                    y = text.attr("y"),
+                    dy = parseFloat(text.attr("dy")) || 0,
+                    tspan = text.text(null).append("tspan").attr("x", 0).attr("y", 0).attr("dy", dy + "em");
+
+                while (word = words.pop()) {
+                    line.push(word);
+                    tspan.text(line.join(" "));
+                    if (tspan.node().getComputedTextLength() > width) {
+                        line.pop();
+                        tspan.text(line.join(" "));
+                        line = [word];
+                        tspan = text.append("tspan").attr("x", 0).attr("y", 0).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                    }
+                }
+
+                let spans = text.selectAll('tspan');
+                let count = spans.size();
+                let startDy = -0.5 * (count - 1) * lineHeight;
+
+                spans.each(function (d, i) {
+                    d3.select(this).attr('dy', (startDy + (i * lineHeight)) + 'em');
+                });
+            });
+        }
 
         Promise.all([
             d3.json('data/senedd_2026_simplified.topojson'),
@@ -112,35 +151,55 @@
 
             function advance() {
                 const precision = 2;
-                const delay = 500;
+                const delay = 200;
                 const duration = 1500;
 
-                if(hexes) {
+                if (hexes) {
                     sc = topojson.feature(sc_boundaries, sc_boundaries.objects.senedd_2026);
 
-                    for(i = 1; i <= sc_hexes_rendered.length; i++) {
+                    for (i = 1; i <= sc_hexes_rendered.length; i++) {
+                        let feature = sc.features.find(f => f.properties.No_Rhif == i);
+
                         d3.select(`#norhif${i}`)
                             .select('path')
                             .transition()
                             .delay(delay)
                             .duration(duration)
-                            .attrTween('d', pathTween(path(sc.features.find(f => f.properties.No_Rhif == i)), precision));
+                            .attrTween('d', pathTween(path(feature), precision));
+
+                        let centroid = path.centroid(feature);
+
+                        d3.select(`#norhif${i}`)
+                            .select('text')
+                            .transition()
+                            .delay(delay)
+                            .duration(duration)
+                            .attr('transform', `translate(${centroid[0]},${centroid[1]})`);
                     }
                     hexes = false;
                 } else {
-                    sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width-margin.left-margin.right, height-margin.top-margin.bottom);
+                    sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width - margin.left - margin.right, height - margin.top - margin.bottom);
 
                     sc_hexes_rendered.forEach(hex => {
                         hex.lineString = `M${hex.vertices.map(v => `${hex.x + margin.left + v.x},${hex.y + margin.top + v.y}`).join('L')}Z`;
                     });
 
-                    for(i = 1; i <= sc_hexes_rendered.length; i++) {
+                    for (i = 1; i <= sc_hexes_rendered.length; i++) {
+                        let hex = sc_hexes_rendered.find(h => h.No_Rhif == i);
+
                         d3.select(`#norhif${i}`)
                             .select('path')
                             .transition()
                             .delay(delay)
                             .duration(duration)
-                            .attrTween('d', pathTween(sc_hexes_rendered.find(h => h.No_Rhif == i).lineString, precision));
+                            .attrTween('d', pathTween(hex.lineString, precision));
+
+                        d3.select(`#norhif${i}`)
+                            .select('text')
+                            .transition()
+                            .delay(delay)
+                            .duration(duration)
+                            .attr('transform', `translate(${hex.x + margin.left},${hex.y + margin.top})`);
                     }
                     hexes = true;
                 }
@@ -159,16 +218,26 @@
 
                     g.append('path')
                         .attr('d', (d) => path(d))
-                        .attr('fill', '#fff' )
+                        .attr('fill', '#fff')
                         .attr('stroke', '#000')
                         .attr('stroke-width', '1px')
                         .attr('id', (d) => d.properties.No_Rhif)
+
+                    g.append('text')
+                        .text((d) => d.properties.English_Na)
+                        .attr('text-anchor', 'middle')
+                        .attr('transform', (d) => {
+                            let centroid = path.centroid(d);
+                            return `translate(${centroid[0]},${centroid[1]})`;
+                        })
+                        .call(wrap, 60);
                 });
 
-                const interval = setInterval(advance, 5000);
-            });
+            const interval = setInterval(advance, 5000);
+        });
 
     </script>
 
 </body>
+
 </html>

@@ -90,28 +90,31 @@
 
         Promise.all([
             d3.csv('data/senedd_multiple_hexes.csv'),
-            d3.json('data/senedd_2026.hexjson'),
-        ]).then(([sc_data, sc_hexes]) => {
+            d3.json('data/senedd_2026_multiple.hexjson'),
+        ]).then(([sc_data, sc_hexes_multiple]) => {
+
+
+            function pointy_hex_corner(center, size, i) {
+                let angle_deg = 60 * i;
+                let angle_rad = Math.PI / 180 * angle_deg;
+                return [center[0] + size * Math.cos(angle_rad), center[1] + size * Math.sin(angle_rad)];
+            }
 
             sc_data.sort((a, b) => {
                 return parties.indexOf(a.Party) - parties.indexOf(b.Party);
             });
 
-            sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width - margin.left - margin.right, height - margin.top - margin.bottom);
-
+            sc_hexes_rendered = d3.renderHexJSON(sc_hexes_multiple, width - margin.left - margin.right, height - margin.top - margin.bottom);
             console.log(sc_hexes_rendered);
-
             pc = d3.parliamentChart(sc_data, width)
                 .sections(1)
                 .sectionGap(0)
                 .seatRadius(20)
                 .rowHeight(60);
 
-            console.log(pc.data());
-
             triangles_data = pc.data();
             triangles_data.forEach((d, i) => {
-                d.parent_hex = sc_hexes_rendered.find(h => h.No_Rhif === d.No_Rhif);
+                d.parent_hex = sc_hexes_rendered.find(h => h.key === d.seat_id);
             });
 
             console.log(triangles_data);
@@ -133,49 +136,73 @@
             function advance() {
 
                 if (hexes) {
-                    svg.selectAll('.triangle')
+                    svg.selectAll('polygon')
                         .transition()
                         .delay(100)
                         .duration(2000)
                         .attr('transform', d => `translate(${d.x}, ${d.y})`)
                         .attr('points', d => [
-                            [-20, -20],
-                            [20, -20],
-                            [0, 20]
+                            ...Array.from({ length: 6 }, (_, i) => pointy_hex_corner([0, 0], pc.seatRadius(), i)),
                         ])
                         .attr('fill', d => party_details[d.Party].colour)
                         .attr('stroke', '#fff')
                         .attr('stroke-width', 2);
+
+                    svg.selectAll('.boundary')
+                        .transition()
+                        .delay(100)
+                        .duration(2000)
+                        .attr('stroke-width', 0);
                     hexes = false;
                 } else {
-                    svg.selectAll('.triangle')
+                    svg.selectAll('polygon')
                         .transition()
                         .delay(100)
                         .duration(2000)
                         .attr('transform', (t) => `translate(${t.parent_hex.x + margin.left},${t.parent_hex.y + margin.top})`)
-                        .attr('points', (t) => `0,0 ${t.parent_hex.vertices[+t.Segment - 1].x},${t.parent_hex.vertices[+t.Segment - 1].y} ${t.parent_hex.vertices[+t.Segment < 6 ? +t.Segment : 0].x},${t.parent_hex.vertices[+t.Segment < 6 ? +t.Segment : 0].y}`)
+                        .attr('points', (t) => t.parent_hex.points)
                         .attr('fill', (t) => getColour(t, t.Segment))
-                        .attr('stroke', '#fff')
+                        .attr('stroke', '#eee')
+                        .attr('stroke-width', 0.5);
+
+                    svg.selectAll('.boundary')
+                        .transition()
+                        .delay(100)
+                        .duration(2000)
                         .attr('stroke-width', 4);
                     hexes = true;
                 }
             }
-
-            let sc_hexmap = svg.selectAll('g')
+            let scer_hexmap = svg.selectAll('g')
                 .data(triangles_data)
                 .join((enter) => {
                     enter.append('polygon')
-                        .attr('class', 'triangle')
-                        .attr('transform', (t) => `translate(${t.parent_hex.x + margin.left},${t.parent_hex.y + margin.top})`)
-                        .attr('id', (t) => `${t.No_Rhif}_${t.Segment}`)
-                        .attr('points', (t) => `0,0 ${t.parent_hex.vertices[+t.Segment - 1].x},${t.parent_hex.vertices[+t.Segment - 1].y} ${t.parent_hex.vertices[+t.Segment < 6 ? +t.Segment : 0].x},${t.parent_hex.vertices[+t.Segment < 6 ? +t.Segment : 0].y}`)
-                        .attr('fill', (t) => getColour(t, t.Segment))
-                        .attr('stroke', '#fff')
-                        .attr('stroke-width', 4);
+                        .attr('transform', (hex) => `translate(${hex.parent_hex.x + margin.left},${hex.parent_hex.y + margin.top})`)
+                        .attr('points', (hex) => hex.parent_hex.points)
+                        .attr('stroke', '#eee')
+                        .attr('fill', (hex) => getColour(hex, hex.Segment))
+                        .attr('stroke-width', 1)
+                        .attr('id', (hex) => hex.key)
+                        .attr('data-name', (hex) => hex.name)
                 });
+
+            sc_boundaries = d3.getBoundarySegmentsForHexJSON(sc_hexes_multiple, width - margin.left - margin.right, height - margin.top - margin.bottom, "English_Na");
+            let boundaries = svg.selectAll('line')
+                .data(sc_boundaries)
+                .join((enter) => {
+                    enter.append('line')
+                        .attr('class', 'boundary')
+                        .attr('x1', (boundary) => boundary.x1 + margin.left)
+                        .attr('y1', (boundary) => boundary.y1 + margin.top)
+                        .attr('x2', (boundary) => boundary.x2 + margin.left)
+                        .attr('y2', (boundary) => boundary.y2 + margin.top)
+                        .attr('fill', 'none')
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 4)
+                });
+
             const interval = setInterval(advance, 5000);
         });
-
     </script>
 
 </body>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -23,27 +24,35 @@
             font-family: "Open Sans", sans-serif;
             color: #555;
         }
-        #sc_map, #scm_map {
+
+        #sc_map,
+        #scm_map {
             display: block;
             width: 45%;
             float: left;
         }
+
         #info {
             clear: both;
             visibility: hidden;
             padding: 30px;
         }
+
         #info.active {
             visibility: visible;
         }
     </style>
 </head>
+
 <body>
     <div id='sc_map'></div>
     <div id="scm_map"></div>
-    <div id="info"><h1>This is <span id="sc_name"></span></h1></div>
+    <div id="info">
+        <h1>This is <span id="sc_name"></span></h1>
+    </div>
 
     <script>
+
 
         let party_details = {
             'Labour': { name: 'Labour', colour: '#DC241f' },
@@ -53,7 +62,7 @@
             'Plaid Cymru': { name: 'Plaid Cymru', colour: '#008142' },
             'Independent': { name: 'Independent', colour: '#aaa' },
             'Reform UK': { name: 'Reform UK', colour: '#12B6CF' },
-            'No Result': { name: 'No Result', colour: '#eee'}
+            'No Result': { name: 'No Result', colour: '#eee' }
         }
 
         let width = d3.select('#sc_map').node().clientWidth;
@@ -73,26 +82,64 @@
         let projection = d3.geoMercator();
         let path = d3.geoPath().projection(projection);
 
-        let active = d3.select(null);
+        let activeGroup = null;
 
-        function reset(event, d) {
-            active.attr('opacity', '1.0');
-            active = d3.select(null);
+        function reset() {
+            d3.selectAll('.map-element')
+                .attr('opacity', '1.0');
+            activeGroup = null;
 
             d3.select('#info')
                 .classed('active', false);
         }
 
+        function mouseover(event, d) {
+            // Apply hover effect to all elements in the same group, unless they are the active group
+            let groupName = d.English_Na;
+            if (activeGroup !== groupName) {
+                d3.selectAll(`.map-element[data-group="${groupName}"]`)
+                    .attr('opacity', '0.5'); // Grey transparency overlay simulation
+
+                d3.select("#info").classed("active", true);
+                if (d.English_Na) {
+                    d3.select('#sc_name').text(d.English_Na);
+                }
+            }
+        }
+
+        function mouseout(event, d) {
+            let groupName = d.English_Na;
+            if (activeGroup !== groupName) {
+                d3.selectAll(`.map-element[data-group="${groupName}"]`)
+                    .attr('opacity', '1.0');
+
+                if (!activeGroup) {
+                    d3.select('#info').classed('active', false);
+                } else {
+                    // Restore info for active group
+                    d3.select('#sc_name').text(activeGroup);
+                }
+            }
+        }
+
         function clicked(event, d) {
-            console.log(d);
-            if(active.node() === this) {
-                reset(event, d);
+            let groupName = d.English_Na;
+            console.log("Clicked group:", groupName);
+
+            if (activeGroup === groupName) {
+                reset();
             } else {
-                active.attr('opacity', '1.0')
-                active = d3.select(this);
-                active.attr('opacity', '0.2')
-                d3.select("#info")
-                        .classed("active", true);
+                // Reset everything first
+                d3.selectAll('.map-element').attr('opacity', '1.0');
+
+                // Set new active group
+                activeGroup = groupName;
+
+                // Highlight new group
+                d3.selectAll(`.map-element[data-group="${groupName}"]`)
+                    .attr('opacity', '0.2');
+
+                d3.select("#info").classed("active", true);
                 if (d.English_Na) {
                     d3.select('#sc_name').text(d.English_Na);
                 }
@@ -105,11 +152,11 @@
             d3.csv('data/senedd_multiple_hexes.csv')
         ]).then(([sc_hexes, sc_hexes_multiple, sc_data]) => {
 
-            function getColour(hex, index){
+            function getColour(hex, index) {
                 let sc_info = sc_data.find(d => d.id === `${hex.No_Rhif}_${index}`);
-                if(sc_info) {
+                if (sc_info) {
                     let party = party_details[sc_info.Party];
-                    if(party) {
+                    if (party) {
                         return party.colour;
                     } else {
                         return 'purple';
@@ -120,12 +167,12 @@
             }
 
 
-            sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width-margin.left-margin.right, height-margin.top-margin.bottom);
+            sc_hexes_rendered = d3.renderHexJSON(sc_hexes, width - margin.left - margin.right, height - margin.top - margin.bottom);
             let sc_hexmap = sc_svg.selectAll('g')
                 .data(sc_hexes_rendered)
                 .join((enter) => {
                     let g = enter.append('g')
-                        .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`);
+                        .attr('transform', (hex) => `translate(${hex.x + margin.left},${hex.y + margin.top})`);
 
                     g.append('polygon')
                         .attr('points', (hex) => hex.points)
@@ -134,23 +181,31 @@
                         .attr('stroke-width', 3)
                         .attr('id', (hex) => hex.key)
                         .attr('data-name', (hex) => hex.name)
-                        .on('click', clicked);
+                        .attr('data-group', (hex) => hex.English_Na)
+                        .classed('map-element', true)
+                        .on('click', clicked)
+                        .on('mouseover', mouseover)
+                        .on('mouseout', mouseout);
 
-                    for(let i=1; i<=6; i++ ){
+                    for (let i = 1; i <= 6; i++) {
                         g.append('polygon')
-                            .attr('points', (hex) => `0,0 ${hex.vertices[i-1].x},${hex.vertices[i-1].y} ${hex.vertices[i < 6 ? i : 0].x},${hex.vertices[i <  6 ? i : 0].y}`)
+                            .attr('points', (hex) => `0,0 ${hex.vertices[i - 1].x},${hex.vertices[i - 1].y} ${hex.vertices[i < 6 ? i : 0].x},${hex.vertices[i < 6 ? i : 0].y}`)
                             .attr('fill', (hex) => getColour(hex, i))
                             .attr('stroke', '#eee')
                             .attr('stroke-width', 0.5)
-                            .on('click', clicked);
+                            .attr('data-group', (hex) => hex.English_Na)
+                            .classed('map-element', true)
+                            .on('click', clicked)
+                            .on('mouseover', mouseover)
+                            .on('mouseout', mouseout);
                     }
                 });
-            sc_hexes_multiple_rendered = d3.renderHexJSON(sc_hexes_multiple, width-margin.left-margin.right, height-margin.top-margin.bottom);
+            sc_hexes_multiple_rendered = d3.renderHexJSON(sc_hexes_multiple, width - margin.left - margin.right, height - margin.top - margin.bottom);
             let scer_hexmap = scer_svg.selectAll('g')
                 .data(sc_hexes_multiple_rendered)
                 .join((enter) => {
                     enter.append('g')
-                        .attr('transform', (hex) => `translate(${hex.x+margin.left},${hex.y+margin.top})`)
+                        .attr('transform', (hex) => `translate(${hex.x + margin.left},${hex.y + margin.top})`)
                         .append('polygon')
                         .attr('points', (hex) => hex.points)
                         .attr('stroke', '#eee')
@@ -158,25 +213,30 @@
                         .attr('stroke-width', 1)
                         .attr('id', (hex) => hex.key)
                         .attr('data-name', (hex) => hex.name)
-                        .on('click', clicked);
+                        .attr('data-group', (hex) => hex.English_Na)
+                        .classed('map-element', true)
+                        .on('click', clicked)
+                        .on('mouseover', mouseover)
+                        .on('mouseout', mouseout);
                 });
 
-            sc_boundaries = d3.getBoundarySegmentsForHexJSON(sc_hexes_multiple, width-margin.left-margin.right, height-margin.top-margin.bottom, "English_Na");
+            sc_boundaries = d3.getBoundarySegmentsForHexJSON(sc_hexes_multiple, width - margin.left - margin.right, height - margin.top - margin.bottom, "English_Na");
             let boundaries = scer_svg.selectAll('line')
                 .data(sc_boundaries)
                 .join((enter) => {
                     enter.append('line')
-                        .attr('x1', (boundary) => boundary.x1+margin.left)
-                        .attr('y1', (boundary) => boundary.y1+margin.top)
-                        .attr('x2', (boundary) => boundary.x2+margin.left)
-                        .attr('y2', (boundary) => boundary.y2+margin.top)
+                        .attr('x1', (boundary) => boundary.x1 + margin.left)
+                        .attr('y1', (boundary) => boundary.y1 + margin.top)
+                        .attr('x2', (boundary) => boundary.x2 + margin.left)
+                        .attr('y2', (boundary) => boundary.y2 + margin.top)
                         .attr('fill', 'none')
                         .attr('stroke', '#fff')
                         .attr('stroke-width', 3)
                 });
-            });
+        });
 
     </script>
 
 </body>
+
 </html>
