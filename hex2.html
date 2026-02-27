@@ -201,7 +201,7 @@
                         .attr('x2', (boundary) => boundary.x2 + margin.left)
                         .attr('y2', (boundary) => boundary.y2 + margin.top)
                         .attr('fill', 'none')
-                        .attr('stroke', '#eee')
+                        .attr('stroke', '#444')
                         .attr('stroke-width', 3)
                 });
 
@@ -225,6 +225,9 @@
                         .on('mouseout', mouseout);
                 });
 
+            console.log(sc_hexes_multiple_with_bg);
+
+
             let sc_bg_boundaries = d3.getBoundarySegmentsForHexJSON(sc_hexes_multiple_with_bg, width - margin.left - margin.right, height - margin.top - margin.bottom, "English_Na");
             let bg_boundaries = sc_bg_svg.selectAll('line')
                 .data(sc_bg_boundaries)
@@ -235,7 +238,7 @@
                         .attr('x2', (boundary) => boundary.x2 + margin.left)
                         .attr('y2', (boundary) => boundary.y2 + margin.top)
                         .attr('fill', 'none')
-                        .attr('stroke', '#eee')
+                        .attr('stroke', '#444')
                         .attr('stroke-width', 3)
                 });
         });

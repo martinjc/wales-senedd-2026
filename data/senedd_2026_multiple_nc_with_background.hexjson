@@ -56,11 +56,6 @@
             "r": 28,
             "colour": "#ccc"
         },
-        "hex_7_27": {
-            "q": 7,
-            "r": 27,
-            "colour": "#ccc"
-        },
         "hex_7_23": {
             "q": 7,
             "r": 23,
@@ -462,28 +457,28 @@
             "colour": "#ccc"
         },
         "hex_1_1": {
-            "q": 8,
+            "q": 7,
             "r": 27,
-            "English_Na": "Bangor Conwy M\u00f4n",
-            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "English_Na": "Bangor Conwy Môn",
+            "Enw_Cymrae": "Bangor Conwy Môn",
             "No_Rhif": 1,
             "colour": "#3cb44b",
             "Segment": 1
         },
         "hex_1_2": {
-            "q": 9,
+            "q": 8,
             "r": 27,
-            "English_Na": "Bangor Conwy M\u00f4n",
-            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "English_Na": "Bangor Conwy Môn",
+            "Enw_Cymrae": "Bangor Conwy Môn",
             "No_Rhif": 1,
             "colour": "#3cb44b",
             "Segment": 2
         },
         "hex_1_3": {
-            "q": 7,
+            "q": 9,
             "r": 27,
-            "English_Na": "Bangor Conwy M\u00f4n",
-            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "English_Na": "Bangor Conwy Môn",
+            "Enw_Cymrae": "Bangor Conwy Môn",
             "No_Rhif": 1,
             "colour": "#3cb44b",
             "Segment": 3
@@ -491,8 +486,8 @@
         "hex_1_4": {
             "q": 9,
             "r": 25,
-            "English_Na": "Bangor Conwy M\u00f4n",
-            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "English_Na": "Bangor Conwy Môn",
+            "Enw_Cymrae": "Bangor Conwy Môn",
             "No_Rhif": 1,
             "colour": "#3cb44b",
             "Segment": 4
@@ -500,8 +495,8 @@
         "hex_1_5": {
             "q": 9,
             "r": 26,
-            "English_Na": "Bangor Conwy M\u00f4n",
-            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "English_Na": "Bangor Conwy Môn",
+            "Enw_Cymrae": "Bangor Conwy Môn",
             "No_Rhif": 1,
             "colour": "#3cb44b",
             "Segment": 5
@@ -509,8 +504,8 @@
         "hex_1_6": {
             "q": 10,
             "r": 26,
-            "English_Na": "Bangor Conwy M\u00f4n",
-            "Enw_Cymrae": "Bangor Conwy M\u00f4n",
+            "English_Na": "Bangor Conwy Môn",
+            "Enw_Cymrae": "Bangor Conwy Môn",
             "No_Rhif": 1,
             "colour": "#3cb44b",
             "Segment": 6
