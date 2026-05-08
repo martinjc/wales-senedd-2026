@@ -310,6 +310,9 @@
             });
 
             individualSeats.sort((a, b) => {
+                if (a.Party === "" && b.Party !== "") return 1;
+                if (b.Party === "" && a.Party !== "") return -1;
+                
                 if (partyCounts[b.Party] !== partyCounts[a.Party]) {
                     return partyCounts[b.Party] - partyCounts[a.Party];
                 }
