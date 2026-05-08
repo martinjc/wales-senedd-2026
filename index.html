@@ -1,38 +1,372 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wales Senedd 2026</title>
+    <script src="//d3js.org/d3.v6.min.js"></script>
+    <script src="//unpkg.com/d3-hexjson"></script>
+    <script src="lib/d3-parliament-chart.js"></script>
     <style>
         html,
         body {
             margin: 0px;
             padding: 0px;
-
             height: 100%;
-            width: 80%;
-            margin: auto;
-
-            background-color: #eeeeee;
-
-            position: relative;
-
+            width: 100%;
+            background-color: #ddd;
             font-family: "Open Sans", sans-serif;
+            color: #555;
+            display: flex;
+            flex-direction: column;
         }
 
-        img {
-            max-width: 70%;
+        #main-header {
+            padding: 20px 20px 0 20px;
+            text-align: center;
+        }
+
+        #main-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2em;
+            color: #333;
+        }
+
+        #main-header p {
+            margin: 0;
+            font-size: 1.1em;
+            color: #666;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        #dashboard {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        #parliament-container {
+            order: 1;
+            /* Top on mobile */
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #info-panel {
+            order: 2;
+            /* Middle on mobile */
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #f4f4f4;
+            text-align: center;
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+        }
+
+        #info-panel h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+
+        #info-panel p {
+            margin: 5px 0;
+            font-size: 1.2em;
+        }
+
+        #hexmap-container {
+            order: 3;
+            /* Bottom on mobile */
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .map-element,
+        .parl-element {
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .selected {
+            stroke: #000 !important;
+            stroke-width: 3px !important;
+        }
+
+        @media (min-width: 768px) {
+            #dashboard {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            #hexmap-container {
+                order: 1;
+                width: 40%;
+                height: auto;
+            }
+
+            #parliament-container {
+                order: 2;
+                width: 60%;
+                height: auto;
+            }
+
+            #info-panel {
+                order: 3;
+                width: 100%;
+                border-top: 1px solid #ccc;
+                border-bottom: none;
+            }
         }
     </style>
 </head>
+
 <body>
-    <h1>2026 Wales Senedd Election</h1>
-    <p>The 2026 Senedd election in Wales will be the first conducted under a new proportional representation system. Wales has been divided into 16 constituencies, each of which will elect 6 members to the Senedd.</p>
+    <header id="main-header">
+        <h1>Wales Senedd 2026 Election Results</h1>
+        <p>Explore the composition of the newly elected Senedd. The hex map shows the geographical distribution of
+            seats, while the parliamentary arc displays the overall seat distribution by party.</p>
+    </header>
+    <div id="dashboard">
+        <div id="hexmap-container">
+            <div id='map'></div>
+        </div>
+        <div id="parliament-container">
+            <!-- Parliament chart will be appended here -->
+        </div>
+        <div id="info-panel">
+            <h2>Seat Information</h2>
+            <p><strong>Constituency:</strong> <span id="info-constituency">None selected</span></p>
+            <p><strong>Winner:</strong> <span id="info-name">-</span></p>
+            <p><strong>Party:</strong> <span id="info-party">-</span></p>
+        </div>
+    </div>
 
-    <h2><a href="hex.html">Hexmap - fixed area hexmap</a></h2>
-    <a href="hex.html"><img src="img/hexmap.png" alt=""></a>
-    <p>There are 2 hexmaps here. The first uses a single hexagon to represent each constituency, with each MS represented by a triangle covering 1/6 of the hexagon. The second uses 6 hexagons to represent each constituency, with one MS per hexagon.</p>
+    <script type="module">
+        import { party_details } from './lib/parties.js';
 
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/1gYFbiy3So4dAo19b2iqeusEzSyeBAPpVwtp00Mek1M0/export?format=csv";
+
+        let mapContainer = d3.select('#map');
+        let width = Math.min(mapContainer.node().clientWidth || 400, 600);
+        let height = width * 1.2;
+
+        let margin = { top: 10, bottom: 10, left: 10, right: 10 }
+
+        let sc_bg_svg = mapContainer.append('svg')
+            .attr('width', '100%')
+            .attr('height', '100%')
+            .attr('viewBox', `0 0 ${width} ${height}`);
+
+        let activeSeatId = null;
+        let globalData = null;
+
+        function reset() {
+            d3.selectAll('.map-element, .parl-element').attr('opacity', '1.0').classed('selected', false);
+            activeSeatId = null;
+            d3.select('#info-constituency').text('None selected');
+            d3.select('#info-name').text('-');
+            d3.select('#info-party').text('-');
+        }
+
+        function mouseover(event, d) {
+            if (!activeSeatId && globalData) {
+                let seatId = d.id || `${d.No_Rhif}_${d.Segment}`;
+                let sc_info = globalData.find(r => r.id === seatId);
+                if (sc_info) {
+                    let groupName = sc_info.English_Na;
+                    d3.selectAll(`.map-element[data-group="${groupName}"], .parl-element[data-group="${groupName}"]`)
+                        .attr('opacity', '0.7');
+                    d3.selectAll(`#seat-${seatId}`).attr('opacity', '1.0');
+                }
+            }
+        }
+
+        function mouseout(event, d) {
+            if (!activeSeatId && globalData) {
+                let seatId = d.id || `${d.No_Rhif}_${d.Segment}`;
+                let sc_info = globalData.find(r => r.id === seatId);
+                if (sc_info) {
+                    let groupName = sc_info.English_Na;
+                    d3.selectAll(`.map-element[data-group="${groupName}"], .parl-element[data-group="${groupName}"]`)
+                        .attr('opacity', '1.0');
+                }
+            }
+        }
+
+        function clicked(event, d) {
+            if (!globalData) return;
+            let seatId = d.id || `${d.No_Rhif}_${d.Segment}`;
+            let sc_info = globalData.find(r => r.id === seatId);
+
+            if (activeSeatId === seatId) {
+                reset();
+            } else if (sc_info) {
+                activeSeatId = seatId;
+                let groupName = sc_info.English_Na;
+
+                d3.selectAll('.map-element, .parl-element').attr('opacity', '0.2').classed('selected', false);
+                d3.selectAll(`.map-element[data-group="${groupName}"], .parl-element[data-group="${groupName}"]`)
+                    .attr('opacity', '0.5');
+                d3.selectAll(`#seat-${seatId}`).attr('opacity', '1.0').classed('selected', true);
+
+                d3.select('#info-constituency').text(sc_info.English_Na);
+                d3.select('#info-name').text(sc_info.MS);
+                d3.select('#info-party').text(sc_info.Party);
+            }
+        }
+
+        Promise.all([
+            d3.json('data/senedd_2026_multiple_nc_with_background.hexjson'),
+            d3.csv(CSV_URL)
+        ]).then(([sc_hexes_multiple_with_bg, sc_data]) => {
+            globalData = sc_data;
+
+            function getColour(hex, index) {
+                if (hex.English_Na) {
+                    let sc_info = sc_data.find(d => d.id === `${hex.No_Rhif}_${index}`);
+                    if (sc_info) {
+                        let party = party_details[sc_info.Party];
+                        return party ? party.colour : '#ccc';
+                    }
+                }
+                return '#ccc';
+            }
+
+            function getStroke(hex, index) {
+                return '#ccc';
+            }
+
+            let sc_hexes_bg_multiple_rendered = d3.renderHexJSON(sc_hexes_multiple_with_bg, width - margin.left - margin.right, height - margin.top - margin.bottom);
+            let sc_bg_hexmap = sc_bg_svg.selectAll('g.hex')
+                .data(sc_hexes_bg_multiple_rendered)
+                .join((enter) => {
+                    enter.append('g')
+                        .attr('class', 'hex')
+                        .attr('transform', (hex) => `translate(${hex.x + margin.left},${hex.y + margin.top})`)
+                        .append('polygon')
+                        .attr('points', (hex) => hex.points)
+                        .attr('stroke', (hex) => getStroke(hex, hex.Segment))
+                        .attr('fill', (hex) => getColour(hex, hex.Segment))
+                        .attr('stroke-width', 1)
+                        .attr('id', (hex) => `seat-${hex.No_Rhif}_${hex.Segment}`)
+                        .attr('data-group', (hex) => hex.English_Na)
+                        .classed('map-element', true)
+                        .on('click', clicked)
+                        .on('mouseover', mouseover)
+                        .on('mouseout', mouseout);
+                });
+
+            let sc_bg_boundaries = d3.getBoundarySegmentsForHexJSON(sc_hexes_multiple_with_bg, width - margin.left - margin.right, height - margin.top - margin.bottom, "English_Na");
+            sc_bg_svg.selectAll('line.boundary')
+                .data(sc_bg_boundaries)
+                .join((enter) => {
+                    enter.append('line')
+                        .attr('class', 'boundary')
+                        .attr('x1', (boundary) => boundary.x1 + margin.left)
+                        .attr('y1', (boundary) => boundary.y1 + margin.top)
+                        .attr('x2', (boundary) => boundary.x2 + margin.left)
+                        .attr('y2', (boundary) => boundary.y2 + margin.top)
+                        .attr('fill', 'none')
+                        .attr('stroke', '#333')
+                        .attr('stroke-width', 2)
+                });
+
+            // Parliament Chart Logic
+            let partyCounts = {};
+            sc_data.forEach(row => {
+                let p = row.Party;
+                if (!partyCounts[p]) partyCounts[p] = 0;
+                partyCounts[p]++;
+            });
+
+            let individualSeats = sc_data.map(row => {
+                let party = party_details[row.Party];
+                return {
+                    id: row.id,
+                    color: party ? party.colour : '#ccc',
+                    Party: row.Party,
+                    English_Na: row.English_Na,
+                    MS: row.MS
+                };
+            });
+
+            individualSeats.sort((a, b) => {
+                if (partyCounts[b.Party] !== partyCounts[a.Party]) {
+                    return partyCounts[b.Party] - partyCounts[a.Party];
+                }
+                if (a.Party !== b.Party) {
+                    return a.Party.localeCompare(b.Party);
+                }
+                return a.English_Na.localeCompare(b.English_Na);
+            });
+
+            let parlContainer = d3.select("#parliament-container");
+            let parlWidth = parlContainer.node().clientWidth || 600;
+            if (parlWidth > 800) parlWidth = 800;
+
+            let parlSvg = parlContainer.append("svg")
+                .attr("width", '100%')
+                .attr("height", '100%')
+                .attr("viewBox", `0 0 ${parlWidth} ${parlWidth / 2 + 50}`);
+
+            let chart = d3.parliamentChart()
+                .width(parlWidth)
+                .data(individualSeats)
+                .sections(5)
+                .sectionGap(30);
+
+            let parlGroup = parlSvg.append("g")
+                .attr("transform", "translate(0, 20)")
+                .call(chart);
+
+            // Replace drawn circles with hexagons
+            parlGroup.selectAll("circle").each(function (d) {
+                let circle = d3.select(this);
+                let cx = +circle.attr("cx");
+                let cy = +circle.attr("cy");
+                let r = +circle.attr("r");
+                let fill = circle.attr("fill");
+
+                let points = [];
+                for (let i = 0; i < 6; i++) {
+                    const angle_rad = Math.PI / 180 * (60 * i - 30);
+                    points.push(`${cx + r * Math.cos(angle_rad)},${cy + r * Math.sin(angle_rad)}`);
+                }
+
+                d3.select(this.parentNode).append("polygon")
+                    .datum(d)
+                    .attr("points", points.join(" "))
+                    .attr("fill", fill)
+                    .attr("class", "parl-element")
+                    .attr("id", `seat-${d.id}`)
+                    .attr("data-group", d.English_Na)
+                    .on('click', clicked)
+                    .on('mouseover', mouseover)
+                    .on('mouseout', mouseout);
+
+                circle.remove();
+            });
+        });
+    </script>
 </body>
+
 </html>
