@@ -323,16 +323,18 @@
             });
 
             let parlContainer = d3.select("#parliament-container");
-            let parlWidth = parlContainer.node().clientWidth || 600;
-            if (parlWidth > 800) parlWidth = 800;
+            // Use a fixed internal resolution for the parliament chart 
+            // so it doesn't drop seats when the container is small.
+            // SVG viewBox will handle scaling it down responsively.
+            let internalWidth = 800;
 
             let parlSvg = parlContainer.append("svg")
                 .attr("width", '100%')
                 .attr("height", '100%')
-                .attr("viewBox", `0 0 ${parlWidth} ${parlWidth / 2 + 50}`);
+                .attr("viewBox", `0 0 ${internalWidth} ${internalWidth / 2 + 50}`);
 
             let chart = d3.parliamentChart()
-                .width(parlWidth)
+                .width(internalWidth)
                 .data(individualSeats)
                 .sections(5)
                 .sectionGap(30);
